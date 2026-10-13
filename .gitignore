@@ -1,0 +1,30 @@
+# Secrets
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node / SvelteKit (also covered by web/.gitignore)
+node_modules/
+
+# Downloaded datasets and trained models (never committed)
+data/raw/
+data/processed/
+models/
+mlruns/
+
+# Generated knowledge graph (graphify)
+graphify-out/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
