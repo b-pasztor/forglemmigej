@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     postgres_password: str
 
     # Learning settings.
-    timezone: str = "Europe/Copenhagen"  # where "today" starts and ends
+    timezone: str = "Europe/Zurich"  # where "today" starts and ends
     new_cards_per_day: int = 10
 
     def database_url(self, database: str | None = None) -> str:

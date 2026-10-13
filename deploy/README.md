@@ -6,16 +6,17 @@ Phone access goes through Tailscale; nothing is exposed to the internet.
 ```
 deploy/
   deploy.sh              build images, load them into k3s, apply manifests
-  k8s/                   kustomize base: postgres, api (+ migration init container), web, ingress, nightly backup
+  k8s/                   kustomize base: postgres, api (+ migration init container), web, ingress, daily backup
   jobs/content-import.yaml   one-off job that downloads the sources and imports the deck
 ```
 
 ## 1. Prepare the node (once)
 
 1. Install Debian 13 (minimal, SSH server, no desktop). Give it a fixed IP or a DHCP reservation.
-2. Install k3s:
+2. Install k3s. The kubelet flags enable graceful node shutdown, so PostgreSQL stops
+   cleanly when the machine is switched off in the evening:
    ```bash
-   curl -sfL https://get.k3s.io | sh -
+   curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--kubelet-arg=shutdown-grace-period=90s --kubelet-arg=shutdown-grace-period-critical-pods=30s" sh -
    ```
 3. Allow your deploy user to load images without a password prompt (`deploy.sh` pipes images over SSH):
    ```bash
@@ -47,8 +48,9 @@ Schema migrations run automatically (init container) before each new API version
 
 ## Backups
 
-`postgres-backup` runs nightly at 02:30 (Copenhagen time) and keeps 14 days of
-`pg_dump` files on the `backups` volume. Test a restore before relying on it:
+`postgres-backup` runs daily at 20:00 (Zurich time), before the node is switched off
+for the night; a run missed while the node was off starts at the next boot. It keeps
+14 days of `pg_dump` files on the `backups` volume. Test a restore before relying on it:
 
 ```bash
 kubectl -n forglemmigej create job --from=cronjob/postgres-backup backup-now

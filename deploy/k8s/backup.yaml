@@ -1,4 +1,6 @@
-# Nightly logical backup of the database (the review log is the training data).
+# Daily logical backup of the database (the review log is the training data).
+# Runs at 20:00, before the node is switched off for the night; if the node was
+# off at that time, Kubernetes starts the missed run at the next boot.
 # Dumps are kept for 14 days on a separate volume; copying them off the node
 # (e.g. to the EliteDesk) is a later step.
 apiVersion: v1
@@ -17,8 +19,8 @@ kind: CronJob
 metadata:
   name: postgres-backup
 spec:
-  schedule: "30 2 * * *"
-  timeZone: Europe/Copenhagen
+  schedule: "0 20 * * *"
+  timeZone: Europe/Zurich
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
