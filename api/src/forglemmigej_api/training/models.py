@@ -51,7 +51,8 @@ def fit_lightgbm(
     model.fit(
         fit[list(features)],
         fit[LABEL],
-        eval_set=[(valid[list(features)], valid[LABEL])],
+        eval_X=(valid[list(features)],),
+        eval_y=(valid[LABEL],),
         eval_metric="binary_logloss",
         callbacks=[early_stopping(50, verbose=False)],
     )
