@@ -6,6 +6,7 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
 
 from forglemmigej_api.config import get_settings
 
@@ -55,3 +56,15 @@ def migrated_engine(test_database_url: str, alembic_cfg: Config) -> Iterator[Eng
     engine = create_engine(test_database_url)
     yield engine
     engine.dispose()
+
+
+@pytest.fixture
+def db(migrated_engine: Engine) -> Iterator[Session]:
+    """A session whose changes are rolled back after the test."""
+    connection = migrated_engine.connect()
+    transaction = connection.begin()
+    session = Session(bind=connection, join_transaction_mode="create_savepoint")
+    yield session
+    session.close()
+    transaction.rollback()
+    connection.close()

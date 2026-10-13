@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     postgres_user: str = "forglemmigej"
     postgres_password: str
 
+    # Learning settings.
+    timezone: str = "Europe/Copenhagen"  # where "today" starts and ends
+    new_cards_per_day: int = 10
+
     def database_url(self, database: str | None = None) -> str:
         return (
             f"postgresql+psycopg://{self.postgres_user}:{self.postgres_password}"

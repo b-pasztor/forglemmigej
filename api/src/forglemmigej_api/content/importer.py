@@ -263,7 +263,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     from forglemmigej_api.db import SessionLocal
 
-    with SessionLocal.begin() as session:
+    with SessionLocal().begin() as session:
         planned = upsert_deck(session, deck, examples)
         deleted, suspended = prune(session, planned)
         counts = dict(

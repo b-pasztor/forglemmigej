@@ -1,0 +1,196 @@
+"""Daily review flow: which card comes next, and recording an answer.
+
+Order within a session: due cards first (the memory model decides these), then
+new cards up to the daily limit (the curriculum decides these). Every answer is
+appended to the review log together with the champion's recall prediction,
+computed from the state *before* the answer (point-in-time).
+"""
+
+import re
+import unicodedata
+from dataclasses import dataclass
+from datetime import datetime, time, timedelta
+from zoneinfo import ZoneInfo
+
+from sqlalchemy import Select, and_, case, func, select
+from sqlalchemy.orm import Session, aliased
+
+from forglemmigej_api.models import (
+    AnswerMode,
+    Card,
+    CardStatus,
+    CardType,
+    Grade,
+    Item,
+    Prediction,
+    Review,
+)
+from forglemmigej_api.scheduling import CHAMPION_MODEL, apply_review, predict_recall
+
+
+def start_of_day(now: datetime, timezone: str) -> datetime:
+    local = now.astimezone(ZoneInfo(timezone))
+    return datetime.combine(local.date(), time.min, tzinfo=local.tzinfo)
+
+
+def introduced_today(session: Session, now: datetime, timezone: str) -> int:
+    return session.scalar(
+        select(func.count())
+        .select_from(Card)
+        .where(Card.introduced_at >= start_of_day(now, timezone))
+    )
+
+
+def _due_cards(now: datetime) -> Select:
+    return (
+        select(Card)
+        .where(
+            Card.status.in_([CardStatus.LEARNING, CardStatus.REVIEW]),
+            Card.due_at <= now,
+        )
+        .order_by(Card.due_at, Card.id)
+    )
+
+
+def _new_cards() -> Select:
+    """New cards in curriculum order: survival phrases first, then by frequency.
+    A cloze card only comes once its item's recognition card has graduated to
+    review: right after the recognition card the sentence is still on screen."""
+    recognition = aliased(Card)
+    return (
+        select(Card)
+        .join(Item, Item.id == Card.item_id)
+        .outerjoin(
+            recognition,
+            and_(
+                recognition.item_id == Card.item_id,
+                recognition.card_type == CardType.RECOGNITION,
+            ),
+        )
+        .where(
+            Card.status == CardStatus.NEW,
+            (Card.card_type != CardType.CLOZE)
+            | (recognition.status == CardStatus.REVIEW),
+        )
+        .order_by(
+            case((func.cardinality(Item.topics) > 0, 0), else_=1),
+            Item.frequency_rank.asc().nulls_last(),
+            case((Card.card_type == CardType.RECOGNITION, 0), else_=1),
+            Card.id,
+        )
+    )
+
+
+@dataclass
+class NextCard:
+    card: Card | None
+    new_remaining: int
+    next_due_at: datetime | None  # when the next learning card becomes due
+
+
+def next_card(
+    session: Session, now: datetime, timezone: str, new_per_day: int
+) -> NextCard:
+    new_remaining = max(0, new_per_day - introduced_today(session, now, timezone))
+    card = session.scalars(_due_cards(now).limit(1)).first()
+    if card is None and new_remaining > 0:
+        card = session.scalars(_new_cards().limit(1)).first()
+    next_due_at = None
+    if card is None:
+        next_due_at = session.scalar(
+            select(func.min(Card.due_at)).where(
+                Card.status.in_([CardStatus.LEARNING, CardStatus.REVIEW])
+            )
+        )
+    return NextCard(card, new_remaining, next_due_at)
+
+
+def normalize_answer(text: str) -> str:
+    text = unicodedata.normalize("NFC", text).casefold().strip()
+    return re.sub(r"[\s.,!?;:\"'«»]+", " ", text).strip()
+
+
+def check_typed_answer(typed: str, expected: str) -> bool:
+    return normalize_answer(typed) == normalize_answer(expected)
+
+
+class AnswerError(ValueError):
+    pass
+
+
+@dataclass
+class AnswerResult:
+    review: Review
+    correct: bool
+    predicted_recall: float | None
+    card: Card
+
+
+def answer_card(
+    session: Session,
+    card_id: int,
+    now: datetime,
+    *,
+    grade: Grade | None = None,
+    typed_answer: str | None = None,
+    response_time_ms: int | None = None,
+    session_id: int | None = None,
+) -> AnswerResult:
+    """Record an answer: log the review and the champion's prediction, then
+    reschedule the card. Cloze cards are graded from the typed answer."""
+    card = session.get(Card, card_id, with_for_update=True)
+    if card is None or card.status == CardStatus.SUSPENDED:
+        raise AnswerError("unknown or suspended card")
+
+    if card.card_type == CardType.CLOZE:
+        if typed_answer is None:
+            raise AnswerError("cloze cards need a typed answer")
+        correct = check_typed_answer(typed_answer, card.target_form or "")
+        grade, mode = (Grade.GOOD if correct else Grade.AGAIN), AnswerMode.TYPED
+    else:
+        if grade is None:
+            raise AnswerError("self-graded cards need a grade")
+        correct, mode = grade > Grade.AGAIN, AnswerMode.SELF_GRADE
+
+    # Point-in-time: the prediction only uses the state before this answer.
+    predicted = predict_recall(card.scheduler_state, now)
+
+    review = Review(
+        card_id=card.id,
+        session_id=session_id,
+        reviewed_at=now,
+        grade=int(grade),
+        response_time_ms=response_time_ms,
+        answer_mode=mode,
+        typed_answer=typed_answer,
+    )
+    session.add(review)
+    session.flush()
+    if predicted is not None:
+        session.add(
+            Prediction(
+                review_id=review.id,
+                model_version=CHAMPION_MODEL,
+                predicted_recall=predicted,
+                is_champion=True,
+            )
+        )
+
+    card.scheduler_state, card.due_at, card.status = apply_review(
+        card.scheduler_state, grade, now
+    )
+    if card.introduced_at is None:
+        card.introduced_at = now
+    session.flush()
+    return AnswerResult(review, correct, predicted, card)
+
+
+def due_soon_count(session: Session, now: datetime, within: timedelta) -> int:
+    return session.scalar(
+        select(func.count())
+        .select_from(Card)
+        .where(
+            Card.status.in_([CardStatus.LEARNING, CardStatus.REVIEW]),
+            Card.due_at <= now + within,
+        )
+    )

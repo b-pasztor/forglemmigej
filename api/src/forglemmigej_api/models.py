@@ -185,6 +185,8 @@ class Review(Base):
     grade: Mapped[int] = mapped_column(SmallInteger)
     response_time_ms: Mapped[int | None]
     answer_mode: Mapped[AnswerMode] = mapped_column(_enum(AnswerMode, "answer_mode"))
+    # What the learner typed (cloze cards), for analysing typical mistakes.
+    typed_answer: Mapped[str | None] = mapped_column(Text)
 
 
 class Prediction(Base):
