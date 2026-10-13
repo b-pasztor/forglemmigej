@@ -13,8 +13,10 @@ Features come in two groups:
 
 import math
 from collections.abc import Sequence
+from copy import copy
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
+from functools import lru_cache
 from zoneinfo import ZoneInfo
 
 from fsrs import Card as FsrsCard
@@ -74,11 +76,19 @@ class FutureLeakError(ValueError):
 _fsrs = Scheduler(enable_fuzzing=False)
 
 
+@lru_cache(maxsize=200_000)
+def _fsrs_state(reviews: tuple[tuple[datetime, int], ...]) -> FsrsCard:
+    """FSRS card state after replaying `reviews`. Cached per prefix, so a history
+    that grows by one review costs one FSRS step instead of a full replay."""
+    card = _fsrs_state(reviews[:-1]) if len(reviews) > 1 else FsrsCard()
+    reviewed_at, grade = reviews[-1]
+    card, _ = _fsrs.review_card(copy(card), Rating(grade), reviewed_at)
+    return card
+
+
 def _fsrs_recall(history: Sequence[PastReview], at: datetime) -> float:
-    card = FsrsCard()
-    for review in history:
-        card, _ = _fsrs.review_card(card, Rating(review.grade), review.reviewed_at)
-    return float(_fsrs.get_card_retrievability(card, at))
+    state = _fsrs_state(tuple((r.reviewed_at, r.grade) for r in history))
+    return float(_fsrs.get_card_retrievability(state, at))
 
 
 def _days(later: datetime, earlier: datetime) -> float:
