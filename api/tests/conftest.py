@@ -5,6 +5,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import Engine, create_engine, text
+from sqlalchemy.exc import OperationalError
 
 from forglemmigej_api.config import get_settings
 
@@ -23,7 +24,17 @@ def alembic_config(url: str) -> Config:
 def test_database_url() -> Iterator[str]:
     """A fresh database for the test run, dropped afterwards."""
     settings = get_settings()
-    admin = create_engine(settings.database_url(), isolation_level="AUTOCOMMIT")
+    admin = create_engine(
+        settings.database_url(),
+        isolation_level="AUTOCOMMIT",
+        connect_args={"connect_timeout": 5},
+    )
+    try:
+        admin.connect().close()
+    except OperationalError as error:
+        pytest.exit(
+            f"PostgreSQL is not reachable; run `docker compose up -d`.\n{error}"
+        )
     with admin.connect() as conn:
         conn.execute(text(f"DROP DATABASE IF EXISTS {TEST_DATABASE} WITH (FORCE)"))
         conn.execute(text(f"CREATE DATABASE {TEST_DATABASE}"))
