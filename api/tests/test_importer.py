@@ -1,10 +1,20 @@
+from datetime import UTC, datetime
+
 from sqlalchemy import Engine, func, select
 from sqlalchemy.orm import Session
 
 from forglemmigej_api.content.deck import DeckItem
-from forglemmigej_api.content.importer import upsert_items
+from forglemmigej_api.content.importer import prune_items, upsert_items
 from forglemmigej_api.content.wiktionary import Lemma
-from forglemmigej_api.models import Card, CardType, Item
+from forglemmigej_api.models import (
+    AnswerMode,
+    Card,
+    CardStatus,
+    CardType,
+    Grade,
+    Item,
+    Review,
+)
 
 
 def deck_item(word: str, rank: int | None, topics: tuple[str, ...] = ()) -> DeckItem:
@@ -43,4 +53,46 @@ def test_import_is_idempotent_and_merges_topics(migrated_engine: Engine) -> None
             )
             == 4
         )
+        session.rollback()
+
+
+def test_prune_deletes_unreviewed_and_suspends_reviewed(
+    migrated_engine: Engine,
+) -> None:
+    with Session(migrated_engine) as session:
+        keep, unreviewed, reviewed = (
+            deck_item("beholde", 1),
+            deck_item("slette", 2),
+            deck_item("pause", 3),
+        )
+        upsert_items(session, [keep, unreviewed, reviewed])
+        reviewed_card = session.scalars(
+            select(Card).join(Item).where(Item.danish == "pause")
+        ).first()
+        session.add(
+            Review(
+                card_id=reviewed_card.id,
+                reviewed_at=datetime.now(UTC),
+                grade=Grade.GOOD,
+                answer_mode=AnswerMode.SELF_GRADE,
+            )
+        )
+        session.flush()
+
+        # Other test data in the same database must not be touched: prune only
+        # compares against what we pass in, so include everything except two.
+        others = session.scalars(
+            select(Item.source_ref).where(
+                Item.source == "wiktionary",
+                Item.danish.not_in(["slette", "pause"]),
+            )
+        ).all()
+        keep_all = [deck_item(ref.split("|")[0], None) for ref in others]
+        assert prune_items(session, keep_all) == (1, 1)
+
+        assert session.scalar(select(Item).where(Item.danish == "slette")) is None
+        statuses = session.scalars(
+            select(Card.status).join(Item).where(Item.danish == "pause")
+        ).all()
+        assert set(statuses) == {CardStatus.SUSPENDED}
         session.rollback()

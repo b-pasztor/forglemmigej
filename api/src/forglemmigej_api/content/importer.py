@@ -6,6 +6,8 @@ Usage (from api/):
 
 The import is idempotent: items are upserted by (source, source_ref) and each
 item gets a recognition and a recall card if it does not have them yet.
+Items that are no longer in the deck (e.g. after a curation fix) are deleted,
+or suspended if they have already been reviewed, so the review log stays intact.
 """
 
 import argparse
@@ -13,7 +15,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from sqlalchemy import func, literal_column, select
+from sqlalchemy import delete, func, literal_column, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -25,7 +27,7 @@ from forglemmigej_api.content.deck import (
     read_frequency_list,
 )
 from forglemmigej_api.content.wiktionary import Dictionary
-from forglemmigej_api.models import Card, CardType, Item
+from forglemmigej_api.models import Card, CardStatus, CardType, Item, Review
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SOURCE = "wiktionary"
@@ -87,6 +89,26 @@ def upsert_items(session: Session, items: Sequence[DeckItem]) -> int:
             .on_conflict_do_nothing(index_elements=["item_id", "card_type"])
         )
     return len(items)
+
+
+def prune_items(session: Session, keep: Sequence[DeckItem]) -> tuple[int, int]:
+    """Remove items that left the deck. Returns (deleted, suspended) item counts."""
+    keep_refs = [item.lemma.key for item in keep]
+    stale = select(Item.id).where(
+        Item.source == SOURCE, Item.source_ref.not_in(keep_refs)
+    )
+    reviewed = select(Card.item_id).join(Review, Review.card_id == Card.id).distinct()
+    suspended = session.execute(
+        update(Card)
+        .where(Card.item_id.in_(stale), Card.item_id.in_(reviewed))
+        .values(status=CardStatus.SUSPENDED)
+        .returning(Card.item_id)
+    ).scalars()
+    unreviewed = stale.where(Item.id.not_in(reviewed))
+    deletable = session.scalars(unreviewed).all()
+    session.execute(delete(Card).where(Card.item_id.in_(deletable)))
+    session.execute(delete(Item).where(Item.id.in_(deletable)))
+    return len(deletable), len(set(suspended))
 
 
 def format_item(item: DeckItem) -> str:

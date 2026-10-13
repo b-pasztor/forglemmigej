@@ -1,6 +1,6 @@
 # Hand-maintained corrections for the frequency-based word deck.
 # The importer maps frequent word forms to Wiktionary entries automatically;
-# these fix the cases where the automatic choice is wrong. Reviewed: top 300.
+# these fix the cases where the automatic choice is wrong. Reviewed: top 500.
 # Keys are quoted because TOML bare keys must be ASCII ("så").
 
 # Word form -> part of speech to use (Wiktionary POS names: adv, conj, prep, ...).
@@ -32,6 +32,28 @@
 "sød" = "sød|adj"       # "sweet", not "whole milk"
 "fejl" = "fejl|noun"    # "mistake"
 "lader" = "lade|verb"   # "lets", not "barn"
+"egen" = "egen|adj"     # "own", not "the oak"
+"fast" = "fast|adj"     # "firm, fixed"
+"lyst" = "lyst|noun"    # "desire, wish"
+"kære" = "kær|adj"      # "dear"
+"gift" = "gift|adj"     # "married", not "poison"
+"kort" = "kort|adj"     # "short"
+"stykke" = "stykke|noun"  # "piece"
+"chance" = "chance|noun"
+"kæreste" = "kæreste|noun"  # "boyfriend, girlfriend"
+"fri" = "fri|adj"       # "free"
+"øje" = "øje|noun"      # "eye"
+"øjne" = "øje|noun"     # "eyes"
+"små" = "lille|adj"     # plural of "small"
+"mindre" = "lille|adj"  # comparative of "small"
+"vis" = "vise|verb"     # "show!"
+"læg" = "lægge|verb"    # "put!", not "calf"
+"holdt" = "holde|verb"  # "held"
+"givet" = "give|verb"   # "given"
+"herre" = "herre|noun"  # "gentleman, lord"
+"huset" = "hus|noun"    # "the house", not a participle of "huse"
+"hænder" = "hånd|noun"  # "hands"
+"søde" = "sød|adj"      # plural of "sweet"
 
 # Lemma key -> display corrections.
 [fix."mangen|adj"]
@@ -47,6 +69,35 @@ english = "to like (kunne lide) / to suffer"
 [fix."nødt|adj"]
 english = "forced (være nødt til = to have to)"
 
+[fix."luk|verb"]
+danish = "lukke"
+english = "to close, shut"
+
+[fix."forbi|prep"]
+english = "past, by / over, finished"
+
+[fix."kæreste|noun"]
+english = "boyfriend, girlfriend"
+
+[fix."forældre|noun"]
+english = "parents"
+
+[fix."rejse|verb"]
+english = "to travel / to rise"
+
+[fix."tøj|noun"]
+english = "clothes, clothing"
+
+[fix."masse|noun"]
+english = "a lot, lots / mass"
+
+[fix."passe|verb"]
+english = "to fit / to look after"
+
 [exclude]
 # Word forms left out of the deck: swear words, and forms without a usable entry.
-words = ["fanden", "helvede", "lort", "pis", "galt"]
+words = [
+    "fanden", "helvede", "lort", "pis", "kæft", "sgu", "røven", "sex",  # swearing, vulgar
+    "galt", "oppe", "passer",  # no usable entry for the common meaning
+    "the", "live",  # English words from subtitles
+]
