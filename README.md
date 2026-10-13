@@ -115,6 +115,7 @@ To run the production images locally: `docker compose --profile app up --build`
 - [ ] Feature pipeline and the first challengers (pre-trained on public review logs)
 - [ ] MLflow tracking and the champion/challenger gate in CI
 - [ ] Grafana dashboards: calibration, drift, learning progress
+- [ ] Public showcase on GitHub Pages: a published model report, then a try-it demo running fully in the browser
 - [ ] Audio (Danish TTS), pronunciation practice (Whisper), an LLM helper for grammar questions
 
 ## Attribution
