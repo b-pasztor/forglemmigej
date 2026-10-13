@@ -27,6 +27,8 @@ class Curation:
     lemma_overrides: dict[str, tuple[str, str]] = field(default_factory=dict)
     # Lemma key ("word|pos") -> replacement fields ("danish", "english").
     fixes: dict[str, dict[str, str]] = field(default_factory=dict)
+    # Lemma key -> English words a translation must contain to confirm the meaning.
+    meanings: dict[str, tuple[str, ...]] = field(default_factory=dict)
     # Word forms to leave out (e.g. English words common in subtitles).
     exclude: frozenset[str] = frozenset()
     # Phrase -> topics.
@@ -57,6 +59,7 @@ class Curation:
                 for form, target in words.get("lemma", {}).items()
             },
             fixes=dict(words.get("fix", {})),
+            meanings={k: tuple(v) for k, v in words.get("meaning", {}).items()},
             exclude=frozenset(words.get("exclude", {}).get("words", [])),
             phrases={
                 phrase: (topic,)

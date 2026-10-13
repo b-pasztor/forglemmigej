@@ -57,8 +57,10 @@ class ItemKind(enum.StrEnum):
 
 
 class CardType(enum.StrEnum):
-    RECOGNITION = "recognition"  # Danish -> English
-    RECALL = "recall"  # English -> Danish
+    # Danish -> English. With a context sentence: the sentence, word highlighted.
+    RECOGNITION = "recognition"
+    RECALL = "recall"  # English -> Danish, word only (unambiguous words)
+    CLOZE = "cloze"  # English sentence + Danish sentence with a gap; typed answer
     LISTENING = "listening"  # audio only -> English
     SPEAKING = "speaking"  # English -> spoken Danish
 
@@ -120,17 +122,29 @@ class Item(Base):
 
 
 class Card(Base):
-    """One way of practising an item. Each card type is forgotten separately."""
+    """One way of practising an item. Each card type is forgotten separately.
+
+    `item_id` is what is being learned (a word or phrase). A card can show it
+    inside a context sentence (`context_item_id`, a sentence item), where
+    `target_form` is the exact form used in that sentence: the highlighted word
+    on a recognition card, and the expected answer on a cloze card.
+    """
 
     __tablename__ = "cards"
     __table_args__ = (
         UniqueConstraint("item_id", "card_type"),
         Index("ix_cards_status_due_at", "status", "due_at"),
+        CheckConstraint(
+            "card_type <> 'cloze' OR (context_item_id IS NOT NULL AND target_form IS NOT NULL)",
+            name="cloze_needs_context",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id"))
     card_type: Mapped[CardType] = mapped_column(_enum(CardType, "card_type"))
+    context_item_id: Mapped[int | None] = mapped_column(ForeignKey("items.id"))
+    target_form: Mapped[str | None] = mapped_column(Text)
     status: Mapped[CardStatus] = mapped_column(
         _enum(CardStatus, "card_status"), server_default=CardStatus.NEW.value
     )

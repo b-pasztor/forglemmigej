@@ -32,6 +32,7 @@
 "sød" = "sød|adj"       # "sweet", not "whole milk"
 "fejl" = "fejl|noun"    # "mistake"
 "lader" = "lade|verb"   # "lets", not "barn"
+"færdig" = "færdig|adj"  # "finished, ready", not an interjection
 "egen" = "egen|adj"     # "own", not "the oak"
 "fast" = "fast|adj"     # "firm, fixed"
 "lyst" = "lyst|noun"    # "desire, wish"
@@ -93,6 +94,23 @@ english = "a lot, lots / mass"
 
 [fix."passe|verb"]
 english = "to fit / to look after"
+
+# Lemma key -> English words that confirm the meaning in an example translation.
+# Needed where English inflects irregularly or the gloss is too generic.
+[meaning]
+"være|verb" = ["be", "is", "am", "are", "was", "were", "been", "being"]
+"have|verb" = ["have", "has", "had", "having", "got"]
+"gøre|verb" = ["do", "does", "did", "done", "doing", "make", "made"]
+"gå|verb" = ["go", "goes", "went", "gone", "going", "walk"]
+"komme|verb" = ["come", "comes", "came", "coming", "get"]
+"se|verb" = ["see", "sees", "saw", "seen", "seeing", "look", "looks", "looked", "looking"]
+"sige|verb" = ["say", "says", "said", "saying", "tell", "told"]
+"tage|verb" = ["take", "takes", "took", "taken", "taking"]
+"give|verb" = ["give", "gives", "gave", "given", "giving"]
+"få|verb" = ["get", "gets", "got", "gotten", "getting", "have", "receive"]
+"vide|verb" = ["know", "knows", "knew", "known"]
+"ved|prep" = ["at", "by", "next to"]  # "on" matches "going on", "near" matches "nearly"
+"blive|verb" = ["become", "becomes", "became", "get", "got", "stay", "be", "is", "was", "will"]
 
 [exclude]
 # Word forms left out of the deck: swear words, and forms without a usable entry.

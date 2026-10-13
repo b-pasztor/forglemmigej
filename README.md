@@ -32,6 +32,9 @@ Downloaded data lives in `data/raw/` and is never committed:
 ```bash
 curl -L -o data/raw/da_50k.txt https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/da/da_50k.txt
 curl -L -o data/raw/kaikki-danish.jsonl https://kaikki.org/dictionary/Danish/kaikki.org-dictionary-Danish.jsonl
+for f in dan/dan_sentences dan/dan-eng_links eng/eng_sentences; do
+  curl -L "https://downloads.tatoeba.org/exports/per_language/$f.tsv.bz2" | bunzip2 > "data/raw/$(basename $f).tsv"
+done
 cd api && uv run python -m forglemmigej_api.content.importer --words 500   # --dry-run to preview
 ```
 
@@ -39,3 +42,4 @@ cd api && uv run python -m forglemmigej_api.content.importer --words 500   # --d
 
 - Word frequencies: [FrequencyWords](https://github.com/hermitdave/FrequencyWords) by Hermit Dave, built from [OpenSubtitles 2018](http://opus.nlpl.eu/OpenSubtitles2018.php), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 - Meanings, gender, pronunciation and phrases: [Wiktionary](https://en.wiktionary.org/), via the [kaikki.org](https://kaikki.org/) extraction ([Wiktextract](https://github.com/tatuylonen/wiktextract)), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+- Example sentences and translations: [Tatoeba](https://tatoeba.org/), [CC BY 2.0 FR](https://creativecommons.org/licenses/by/2.0/fr/).

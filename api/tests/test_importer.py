@@ -1,10 +1,12 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import Engine, func, select
+from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
 from forglemmigej_api.content.deck import DeckItem
-from forglemmigej_api.content.importer import prune_items, upsert_items
+from forglemmigej_api.content.examples import Example
+from forglemmigej_api.content.importer import plan_cards, prune, upsert_deck
+from forglemmigej_api.content.tatoeba import Sentence, Translation
 from forglemmigej_api.content.wiktionary import Lemma
 from forglemmigej_api.models import (
     AnswerMode,
@@ -17,18 +19,57 @@ from forglemmigej_api.models import (
 )
 
 
-def deck_item(word: str, rank: int | None, topics: tuple[str, ...] = ()) -> DeckItem:
-    lemma = Lemma(word=word, pos="intj", english=f"{word} in English")
+def deck_item(
+    word: str, rank: int | None, topics: tuple[str, ...] = (), pos: str = "noun"
+) -> DeckItem:
+    lemma = Lemma(
+        word=word, pos=pos, english=f"{word} in English", glosses=(f"{word}-en",)
+    )
     return DeckItem(lemma=lemma, kind="word", frequency_rank=rank, topics=topics)
+
+
+def example(sid: str, text: str, form: str) -> Example:
+    translation = Translation(f"e{sid}", "English")
+    return Example(Sentence(sid, text, (translation,)), translation, form, "x")
+
+
+def cards_of(session: Session, word: str) -> dict[CardType, Card]:
+    rows = session.scalars(
+        select(Card).join(Item, Card.item_id == Item.id).where(Item.danish == word)
+    )
+    return {card.card_type: card for card in rows}
+
+
+def test_plan_cards() -> None:
+    noun = deck_item("hus", 1)
+    with_sentence = plan_cards(noun, example("1", "Huset er stort.", "Huset"))
+    assert [p.card_type for p in with_sentence] == [
+        CardType.RECOGNITION,
+        CardType.CLOZE,
+    ]
+    assert [p.card_type for p in plan_cards(noun, None)] == [
+        CardType.RECOGNITION,
+        CardType.RECALL,
+    ]
+    assert plan_cards(deck_item("et", 1, pos="article"), None) == []
+    curated = DeckItem(
+        lemma=Lemma(word="skål", pos="intj", english="cheers", glosses=("cheers",)),
+        kind="phrase",
+        frequency_rank=None,
+    )
+    assert [p.card_type for p in plan_cards(curated, None)] == [
+        CardType.RECOGNITION,
+        CardType.RECALL,
+    ]
 
 
 def test_import_is_idempotent_and_merges_topics(migrated_engine: Engine) -> None:
     with Session(migrated_engine) as session:
-        upsert_items(session, [deck_item("hejsa", 95), deck_item("farvel", 314)])
+        upsert_deck(session, [deck_item("hejsa", 95), deck_item("farvel", 314)])
         # The same lemma again as a curated phrase: no rank, but a topic.
-        upsert_items(session, [deck_item("hejsa", None, ("greetings",))])
+        upsert_deck(session, [deck_item("hejsa", None, ("greetings",))])
         # Re-running the whole import must not change anything.
-        upsert_items(session, [deck_item("hejsa", 95), deck_item("farvel", 314)])
+        upsert_deck(session, [deck_item("hejsa", 95), deck_item("farvel", 314)])
 
         items = session.scalars(
             select(Item)
@@ -39,20 +80,31 @@ def test_import_is_idempotent_and_merges_topics(migrated_engine: Engine) -> None
             ("farvel", 314, []),
             ("hejsa", 95, ["greetings"]),
         ]
-        card_types = session.scalars(
-            select(Card.card_type)
-            .where(Card.item_id == items[1].id)
-            .order_by(Card.card_type)
-        ).all()
-        assert card_types == [CardType.RECALL, CardType.RECOGNITION]
-        assert (
-            session.scalar(
-                select(func.count())
-                .select_from(Card)
-                .where(Card.item_id.in_([i.id for i in items]))
-            )
-            == 4
+        assert set(cards_of(session, "hejsa")) == {
+            CardType.RECOGNITION,
+            CardType.RECALL,
+        }
+        session.rollback()
+
+
+def test_example_sentence_becomes_card_context(migrated_engine: Engine) -> None:
+    with Session(migrated_engine) as session:
+        hus = deck_item("huus", 1)
+        upsert_deck(
+            session,
+            [hus],
+            {hus.lemma.key: example("900", "Huuset er stort.", "Huuset")},
         )
+        cards = cards_of(session, "huus")
+        assert set(cards) == {CardType.RECOGNITION, CardType.CLOZE}
+        cloze = cards[CardType.CLOZE]
+        context = session.get(Item, cloze.context_item_id)
+        assert (context.kind, context.danish, context.source) == (
+            "sentence",
+            "Huuset er stort.",
+            "tatoeba",
+        )
+        assert cloze.target_form == "Huuset"
         session.rollback()
 
 
@@ -60,18 +112,13 @@ def test_prune_deletes_unreviewed_and_suspends_reviewed(
     migrated_engine: Engine,
 ) -> None:
     with Session(migrated_engine) as session:
-        keep, unreviewed, reviewed = (
-            deck_item("beholde", 1),
-            deck_item("slette", 2),
-            deck_item("pause", 3),
+        planned = upsert_deck(
+            session,
+            [deck_item("beholde", 1), deck_item("slette", 2), deck_item("pause", 3)],
         )
-        upsert_items(session, [keep, unreviewed, reviewed])
-        reviewed_card = session.scalars(
-            select(Card).join(Item).where(Item.danish == "pause")
-        ).first()
         session.add(
             Review(
-                card_id=reviewed_card.id,
+                card_id=cards_of(session, "pause")[CardType.RECOGNITION].id,
                 reviewed_at=datetime.now(UTC),
                 grade=Grade.GOOD,
                 answer_mode=AnswerMode.SELF_GRADE,
@@ -79,20 +126,24 @@ def test_prune_deletes_unreviewed_and_suspends_reviewed(
         )
         session.flush()
 
-        # Other test data in the same database must not be touched: prune only
-        # compares against what we pass in, so include everything except two.
-        others = session.scalars(
-            select(Item.source_ref).where(
-                Item.source == "wiktionary",
-                Item.danish.not_in(["slette", "pause"]),
-            )
-        ).all()
-        keep_all = [deck_item(ref.split("|")[0], None) for ref in others]
-        assert prune_items(session, keep_all) == (1, 1)
+        # "slette" and "pause" leave the deck; everything else stays planned.
+        gone = set(
+            session.scalars(select(Item.id).where(Item.danish.in_(["slette", "pause"])))
+        )
+        keep = {
+            item_id: types for item_id, types in planned.items() if item_id not in gone
+        }
+        deleted, suspended = prune(session, keep)
 
+        # slette: 2 cards deleted; pause: recall deleted, reviewed recognition suspended.
+        assert (deleted, suspended) == (3, 1)
         assert session.scalar(select(Item).where(Item.danish == "slette")) is None
-        statuses = session.scalars(
-            select(Card.status).join(Item).where(Item.danish == "pause")
-        ).all()
-        assert set(statuses) == {CardStatus.SUSPENDED}
+        pause = cards_of(session, "pause")
+        assert {t: c.status for t, c in pause.items()} == {
+            CardType.RECOGNITION: CardStatus.SUSPENDED
+        }
+        assert set(cards_of(session, "beholde")) == {
+            CardType.RECOGNITION,
+            CardType.RECALL,
+        }
         session.rollback()
