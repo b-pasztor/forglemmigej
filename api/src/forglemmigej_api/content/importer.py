@@ -160,9 +160,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     with SessionLocal.begin() as session:
         count = upsert_items(session, words + phrases)
+        deleted, suspended = prune_items(session, words + phrases)
         cards = session.scalar(select(func.count()).select_from(Card))
     print(
-        f"imported {count} items ({len(words)} words, {len(phrases)} phrases); {cards} cards in total"
+        f"imported {count} items ({len(words)} words, {len(phrases)} phrases); "
+        f"removed {deleted}, suspended {suspended} stale items; {cards} cards in total"
     )
     return 0
 
