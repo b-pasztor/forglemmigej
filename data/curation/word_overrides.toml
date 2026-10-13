@@ -1,0 +1,52 @@
+# Hand-maintained corrections for the frequency-based word deck.
+# The importer maps frequent word forms to Wiktionary entries automatically;
+# these fix the cases where the automatic choice is wrong. Reviewed: top 300.
+# Keys are quoted because TOML bare keys must be ASCII ("så").
+
+# Word form -> part of speech to use (Wiktionary POS names: adv, conj, prep, ...).
+[pos]
+"en" = "article"   # "a, an", not the pronoun "one"
+"så" = "adv"       # "so, then"
+"til" = "prep"     # "to", not "until"
+"nu" = "adv"       # "now"
+"bare" = "adv"     # "just", not "if only"
+"hvis" = "conj"    # "if", not "whose"
+
+# Word form -> "lemma|pos" when the form belongs to a different dictionary entry.
+[lemma]
+"gør" = "gøre|verb"     # "does", not "barks" (gø)
+"lad" = "lade|verb"     # "let!", not "truck bed"
+"tag" = "tage|verb"     # "take!", not "roof"
+"nok" = "nok|adv"       # "probably, enough"
+"jo" = "jo|adv"         # "as you know" / contradicting "yes"
+"hele" = "hel|adj"      # "whole", not "heal"
+"bedre" = "god|adj"     # comparative of "good"
+"bedste" = "god|adj"    # superlative of "good", not "grandmother"
+"gode" = "god|adj"      # plural of "good"
+"død" = "død|adj"       # "dead"
+"nødt" = "nødt|adj"     # "være nødt til" = "have to"
+"næste" = "næste|adj"   # "next", not "to tack"
+"gange" = "gang|noun"   # "times", plural of "gang"
+"slags" = "slags|adj"   # "kind, sort"
+"ny" = "ny|adj"         # "new", not "new moon"
+"sød" = "sød|adj"       # "sweet", not "whole milk"
+"fejl" = "fejl|noun"    # "mistake"
+"lader" = "lade|verb"   # "lets", not "barn"
+
+# Lemma key -> display corrections.
+[fix."mangen|adj"]
+danish = "mange"
+english = "many"
+
+[fix."gang|noun"]
+english = "time (occasion) / walk"
+
+[fix."lide|verb"]
+english = "to like (kunne lide) / to suffer"
+
+[fix."nødt|adj"]
+english = "forced (være nødt til = to have to)"
+
+[exclude]
+# Word forms left out of the deck: swear words, and forms without a usable entry.
+words = ["fanden", "helvede", "lort", "pis", "galt"]

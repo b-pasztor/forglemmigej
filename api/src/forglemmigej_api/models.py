@@ -52,6 +52,7 @@ def _enum(enum_class: type[enum.Enum], name: str) -> Enum:
 
 class ItemKind(enum.StrEnum):
     WORD = "word"
+    PHRASE = "phrase"  # a fixed multi-word expression
     SENTENCE = "sentence"
 
 
@@ -109,6 +110,10 @@ class Item(Base):
     # Where the item came from (e.g. "tatoeba"), for attribution and licensing.
     source: Mapped[str] = mapped_column(Text)
     source_ref: Mapped[str] = mapped_column(Text)
+    # Extra dictionary data: part of speech, all glosses, IPA, compound parts.
+    details: Mapped[dict[str, Any]] = mapped_column(
+        JSONB, server_default=text("'{}'::jsonb")
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

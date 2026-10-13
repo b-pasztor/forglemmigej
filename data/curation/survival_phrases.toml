@@ -1,0 +1,17 @@
+# Curated survival phrases, grouped by topic. Every phrase must exist in the
+# Danish Wiktionary extract; its English meaning is taken from there.
+
+[greetings]
+phrases = ["hej", "hej hej", "goddag", "godaften", "godnat", "farvel", "vi ses", "hvad så", "hvordan har du det", "hvordan går det"]
+
+[politeness]
+phrases = ["mange tak", "tusind tak", "nej tak", "selv tak", "det var så lidt", "undskyld", "i lige måde", "velbekomme", "tak for mad", "skål", "tillykke", "god bedring"]
+
+[conversation]
+phrases = ["jeg forstår ikke", "jeg ved det ikke", "taler du engelsk", "taler du dansk", "hvad hedder du", "jeg hedder", "ikke sandt", "hvad sker der"]
+
+[time]
+phrases = ["i går", "i dag", "i morgen"]
+
+[needs]
+phrases = ["hvor er toilettet", "jeg er sulten", "jeg er tørstig"]
