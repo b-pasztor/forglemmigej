@@ -1,0 +1,54 @@
+# Nightly logical backup of the database (the review log is the training data).
+# Dumps are kept for 14 days on a separate volume; copying them off the node
+# (e.g. to the EliteDesk) is a later step.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backups
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+spec:
+  schedule: "30 2 * * *"
+  timeZone: Europe/Copenhagen
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: pg-dump
+              image: postgres:18
+              envFrom:
+                - secretRef:
+                    name: forglemmigej-db
+              env:
+                - name: PGHOST
+                  value: postgres
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  file="/backups/forglemmigej-$(date +%Y%m%d-%H%M%S).dump"
+                  PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc -f "$file.part"
+                  mv "$file.part" "$file"
+                  find /backups -name 'forglemmigej-*.dump' -mtime +14 -delete
+                  ls -lh /backups
+              volumeMounts:
+                - name: backups
+                  mountPath: /backups
+          volumes:
+            - name: backups
+              persistentVolumeClaim:
+                claimName: backups

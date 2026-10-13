@@ -3,6 +3,7 @@
 Usage (from api/):
     uv run python -m forglemmigej_api.content.importer --words 500
     uv run python -m forglemmigej_api.content.importer --words 300 --dry-run
+    uv run python -m forglemmigej_api.content.importer --download   # fetch sources first
 
 The import is idempotent: items are upserted by (source, source_ref), and the
 cards each item should have are created or updated. Words with a validated
@@ -42,6 +43,7 @@ from forglemmigej_api.content.deck import (
     read_frequency_list,
 )
 from forglemmigej_api.content.examples import Example, select_examples
+from forglemmigej_api.content.sources import download_sources
 from forglemmigej_api.content.tatoeba import load_corpus
 from forglemmigej_api.content.wiktionary import Dictionary
 from forglemmigej_api.models import Card, CardStatus, CardType, Item, Review
@@ -237,10 +239,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--dry-run", action="store_true", help="print the deck, do not write"
     )
+    parser.add_argument(
+        "--download", action="store_true", help="fetch missing source files first"
+    )
     args = parser.parse_args(argv)
 
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
+    if args.download:
+        fetched = download_sources(args.raw_dir)
+        print(f"downloaded: {', '.join(fetched) or 'nothing (all present)'}")
 
     dictionary = Dictionary.from_jsonl(args.raw_dir / "kaikki-danish.jsonl")
     curation = Curation.load(args.curation_dir)

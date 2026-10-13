@@ -1,0 +1,46 @@
+# Imports (or refreshes) the learning content inside the cluster: downloads the
+# sources into a scratch volume and runs the importer. Run after a deploy whose
+# curation or content code changed (deploy.sh fills in the image tag):
+#   sed "s/:latest/:$TAG/" deploy/jobs/content-import.yaml | kubectl create -f -
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: content-import-
+  namespace: forglemmigej
+  labels:
+    app.kubernetes.io/part-of: forglemmigej
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: import
+          image: forglemmigej-api:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - python
+            - -m
+            - forglemmigej_api.content.importer
+            - --download
+            - --raw-dir=/data/raw
+            - --curation-dir=/app/curation
+          envFrom:
+            - secretRef:
+                name: forglemmigej-db
+          env:
+            - name: POSTGRES_HOST
+              value: postgres
+          volumeMounts:
+            - name: raw
+              mountPath: /data
+          resources:
+            requests: { cpu: 200m, memory: 512Mi }
+            limits: { memory: 2Gi }
+      volumes:
+        - name: raw
+          emptyDir:
+            sizeLimit: 1Gi

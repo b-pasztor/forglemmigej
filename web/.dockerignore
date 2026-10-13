@@ -1,0 +1,11 @@
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/node_modules
+**/.svelte-kit
+build
+data/raw
+graphify-out
+.env
+.git

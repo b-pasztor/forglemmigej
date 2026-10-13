@@ -1,0 +1,17 @@
+# k3s ships Traefik as its ingress controller. This exposes the app on the
+# node's port 80 inside the home network; phone access goes through Tailscale.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 8080
