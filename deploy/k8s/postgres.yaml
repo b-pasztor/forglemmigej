@@ -24,6 +24,7 @@ spec:
       labels:
         app.kubernetes.io/name: postgres
     spec:
+      enableServiceLinks: false
       # Time for a clean shutdown when the node is switched off (graceful node shutdown).
       terminationGracePeriodSeconds: 60
       containers:

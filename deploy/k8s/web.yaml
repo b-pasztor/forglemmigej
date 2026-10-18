@@ -22,6 +22,7 @@ spec:
       labels:
         app.kubernetes.io/name: web
     spec:
+      enableServiceLinks: false
       securityContext:
         runAsNonRoot: true
       containers:

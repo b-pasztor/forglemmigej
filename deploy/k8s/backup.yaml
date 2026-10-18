@@ -27,6 +27,7 @@ spec:
       backoffLimit: 2
       template:
         spec:
+          enableServiceLinks: false
           restartPolicy: OnFailure
           containers:
             - name: pg-dump

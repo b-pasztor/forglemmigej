@@ -22,6 +22,9 @@ spec:
       labels:
         app.kubernetes.io/name: api
     spec:
+      # Kubernetes would inject POSTGRES_PORT=tcp://... for the postgres Service,
+      # which clashes with our POSTGRES_* settings. Services are found via DNS.
+      enableServiceLinks: false
       securityContext:
         runAsNonRoot: true
       initContainers:
