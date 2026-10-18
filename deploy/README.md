@@ -15,8 +15,25 @@ deploy/
 
 Install Debian 13 by hand (netinst, no desktop; software selection: only "SSH server"
 and "standard system utilities"; leave the root password empty so your user gets
-sudo). Give the machine a DHCP reservation in the router. Everything after that is
-the Ansible playbook in `deploy/ansible/`:
+sudo). Give the machine a DHCP reservation in the router.
+
+**Installing where there is no network** (and moving the machine to the router
+afterwards, without a monitor): use the full `debian-13.x.x-amd64-DVD-1.iso`, choose
+"Do not configure the network at this time" and no network mirror. Before switching
+off, still with the monitor attached:
+
+```bash
+python3 --version                      # Ansible needs it; if missing: sudo apt install python3 (from the install stick)
+ip -br link                            # note the wired interface name (e.g. eno1) and its MAC address
+printf 'allow-hotplug eno1
+iface eno1 inet dhcp
+' | sudo tee /etc/network/interfaces.d/eno1
+```
+
+At the router, find the MAC address in the client list to get the IP (and reserve it).
+The playbook replaces the install-medium package source with the online mirrors.
+
+Everything after the installation is the Ansible playbook in `deploy/ansible/`:
 
 - base packages, timezone, unattended security upgrades
 - Tailscale, logged in with a one-time auth key, and `tailscale serve` for HTTPS on `https://<node>.<tailnet>.ts.net`
