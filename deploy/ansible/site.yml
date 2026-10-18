@@ -21,20 +21,27 @@
 
   tasks:
     # --- Base system -----------------------------------------------------------
-    # An offline install (DVD image, no network mirror) leaves only the install
-    # medium as a package source; switch to the online Debian mirrors.
-    - name: Check for an install-medium package source
-      ansible.builtin.command: grep -qs '^deb cdrom:' /etc/apt/sources.list
-      register: cdrom_source
+    # An offline install (DVD image, no network mirror) leaves no online package
+    # source, only the install medium (if anything). Add the online Debian
+    # mirrors when none is configured.
+    - name: Check for an online Debian package source
+      ansible.builtin.command:
+        argv:
+          - grep
+          - -rhsE
+          - "^[[:space:]]*(deb[[:space:]].*https?://[^ ]*debian|URIs:.*https?://[^ ]*debian)"
+          - /etc/apt/sources.list
+          - /etc/apt/sources.list.d/
+      register: online_source
       changed_when: false
       failed_when: false
 
-    - name: Remove the install-medium package source
-      ansible.builtin.lineinfile:
+    - name: Disable install-medium package sources
+      ansible.builtin.replace:
         path: /etc/apt/sources.list
-        regexp: "^deb cdrom:"
-        state: absent
-      when: cdrom_source.rc == 0
+        regexp: '^(deb\s+(\[[^\]]*\]\s+)?cdrom:.*)$'
+        replace: '# \1'
+      when: online_source.rc != 0
 
     - name: Add the online Debian package sources
       ansible.builtin.deb822_repository:
@@ -46,7 +53,7 @@
           - "{{ ansible_distribution_release }}-updates"
         components: [main, non-free-firmware]
         signed_by: /usr/share/keyrings/debian-archive-keyring.gpg
-      when: cdrom_source.rc == 0
+      when: online_source.rc != 0
 
     - name: Add the Debian security updates source
       ansible.builtin.deb822_repository:
@@ -56,13 +63,12 @@
         suites: "{{ ansible_distribution_release }}-security"
         components: [main, non-free-firmware]
         signed_by: /usr/share/keyrings/debian-archive-keyring.gpg
-      when: cdrom_source.rc == 0
+      when: online_source.rc != 0
 
     - name: Upgrade packages
       ansible.builtin.apt:
-        update_cache: true
+        update_cache: true # always refresh: sources may have just been added
         upgrade: dist
-        cache_valid_time: 3600
 
     - name: Install base packages
       ansible.builtin.apt:
