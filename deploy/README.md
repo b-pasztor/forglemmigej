@@ -15,7 +15,10 @@ deploy/
 
 Install Debian 13 by hand (netinst, no desktop; software selection: only "SSH server"
 and "standard system utilities"; leave the root password empty so your user gets
-sudo). Give the machine a DHCP reservation in the router.
+sudo). Give the machine a DHCP reservation in the router. If the disk still holds an old
+Proxmox LVM volume group (`pve`), the installer refuses to reuse it: delete the volume
+group under Manual → Configure the Logical Volume Manager first (or run
+`vgremove -ff pve` and `wipefs -a /dev/nvme0n1` in the installer shell), then partition.
 
 **Installing where there is no network** (and moving the machine to the router
 afterwards, without a monitor): use the full `debian-13.x.x-amd64-DVD-1.iso`, choose
@@ -25,9 +28,7 @@ off, still with the monitor attached:
 ```bash
 python3 --version                      # Ansible needs it; if missing: sudo apt install python3 (from the install stick)
 ip -br link                            # note the wired interface name (e.g. eno1) and its MAC address
-printf 'allow-hotplug eno1
-iface eno1 inet dhcp
-' | sudo tee /etc/network/interfaces.d/eno1
+printf 'allow-hotplug eno1\niface eno1 inet dhcp\n' | sudo tee /etc/network/interfaces.d/eno1
 ```
 
 At the router, find the MAC address in the client list to get the IP (and reserve it).
