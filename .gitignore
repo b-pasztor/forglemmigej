@@ -1,5 +1,7 @@
 # Secrets and personal notes
 .env
+deploy/ansible/inventory.ini
+deploy/ansible/kubeconfig
 
 # Python
 .venv/

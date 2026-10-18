@@ -1,0 +1,155 @@
+# Prepares a fresh Debian 13 machine as the forglemmigej node:
+# base packages and timezone, Tailscale (HTTPS on *.ts.net), single-node k3s with
+# graceful shutdown, sudo rule for loading images, and a kubeconfig for the laptop.
+#
+# Run from WSL (Ansible's control side does not run on Windows):
+#   cd /mnt/d/Development/MLOps/deploy/ansible
+#   TAILSCALE_AUTHKEY=tskey-auth-... ansible-playbook -i inventory.ini site.yml
+# Re-running is safe: every step checks the current state first.
+
+- name: Prepare the forglemmigej node
+  hosts: node
+  become: true
+  vars:
+    timezone: Europe/Zurich
+    k3s_channel: stable
+    # One-time key from the Tailscale admin console (Settings > Keys). Only needed
+    # the first time; an already logged-in node is left alone.
+    tailscale_authkey: "{{ lookup('ansible.builtin.env', 'TAILSCALE_AUTHKEY') }}"
+    deploy_user: "{{ ansible_user }}"
+    local_kubeconfig: "{{ playbook_dir }}/kubeconfig"
+
+  tasks:
+    # --- Base system -----------------------------------------------------------
+    - name: Upgrade packages
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
+        cache_valid_time: 3600
+
+    - name: Install base packages
+      ansible.builtin.apt:
+        name: [curl, ca-certificates, gnupg, htop, jq, unattended-upgrades]
+        state: present
+
+    - name: Read the current timezone
+      ansible.builtin.command: timedatectl show --property=Timezone --value
+      register: current_timezone
+      changed_when: false
+
+    - name: Set the timezone (scheduled jobs and "today" are local time)
+      ansible.builtin.command: timedatectl set-timezone {{ timezone }}
+      when: current_timezone.stdout != timezone
+      changed_when: true
+
+    # --- Tailscale -------------------------------------------------------------
+    - name: Add the Tailscale apt repository
+      ansible.builtin.deb822_repository:
+        name: tailscale
+        types: deb
+        uris: https://pkgs.tailscale.com/stable/debian
+        suites: "{{ ansible_distribution_release }}"
+        components: main
+        signed_by: https://pkgs.tailscale.com/stable/debian/{{ ansible_distribution_release }}.noarmor.gpg
+
+    - name: Install Tailscale
+      ansible.builtin.apt:
+        name: tailscale
+        update_cache: true
+        state: present
+
+    - name: Check whether Tailscale is logged in
+      ansible.builtin.command: tailscale status --json
+      register: tailscale_status
+      changed_when: false
+      failed_when: false
+
+    - name: Log in to Tailscale
+      ansible.builtin.command: tailscale up --authkey={{ tailscale_authkey }} --hostname={{ inventory_hostname }}
+      when: (tailscale_status.stdout | default('{}', true) | from_json).BackendState | default('') != 'Running'
+      no_log: true # keeps the auth key out of the output
+      changed_when: true
+
+    - name: Read the node's Tailscale name
+      ansible.builtin.command: tailscale status --json
+      register: tailscale_self
+      changed_when: false
+
+    - name: Remember the Tailscale DNS name
+      ansible.builtin.set_fact:
+        tailscale_dns_name: "{{ (tailscale_self.stdout | from_json).Self.DNSName | regex_replace('\\.$', '') }}"
+
+    # --- k3s -------------------------------------------------------------------
+    - name: Create the k3s configuration directory
+      ansible.builtin.file:
+        path: /etc/rancher/k3s
+        state: directory
+        mode: "0755"
+
+    - name: Write the k3s configuration
+      ansible.builtin.template:
+        src: k3s-config.yaml.j2
+        dest: /etc/rancher/k3s/config.yaml
+        mode: "0600"
+      notify: Restart k3s
+      register: k3s_config
+
+    - name: Check whether k3s is installed
+      ansible.builtin.stat:
+        path: /usr/local/bin/k3s
+      register: k3s_binary
+
+    - name: Install k3s
+      ansible.builtin.shell: set -o pipefail && curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL={{ k3s_channel }} sh -
+      args:
+        executable: /bin/bash
+      when: not k3s_binary.stat.exists
+      changed_when: true
+
+    - name: Wait for the node to become Ready
+      ansible.builtin.command: k3s kubectl wait --for=condition=Ready node --all --timeout=180s
+      changed_when: false
+
+    - name: Allow the deploy user to load images into k3s (deploy.sh)
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/k3s-import
+        content: "{{ deploy_user }} ALL=(root) NOPASSWD: /usr/local/bin/k3s ctr images import -\n"
+        mode: "0440"
+        validate: visudo -cf %s
+
+    - name: Fetch the kubeconfig
+      ansible.builtin.slurp:
+        src: /etc/rancher/k3s/k3s.yaml
+      register: kubeconfig
+
+    - name: Save it on the laptop, pointing at the node's Tailscale name
+      ansible.builtin.copy:
+        dest: "{{ local_kubeconfig }}"
+        content: "{{ kubeconfig.content | b64decode | replace('https://127.0.0.1:6443', 'https://' + tailscale_dns_name + ':6443') }}"
+        mode: "0600"
+      delegate_to: localhost
+      become: false
+
+    # --- HTTPS for the app -----------------------------------------------------
+    - name: Read the Tailscale serve configuration
+      ansible.builtin.command: tailscale serve status --json
+      register: serve_status
+      changed_when: false
+
+    - name: Serve the app over HTTPS on the tailnet (to Traefik on port 80)
+      ansible.builtin.command: tailscale serve --bg --https=443 http://127.0.0.1:80
+      when: "'127.0.0.1:80' not in serve_status.stdout"
+      changed_when: true
+
+    - name: Show where the app will be
+      ansible.builtin.debug:
+        msg:
+          - "App: https://{{ tailscale_dns_name }}/"
+          - "kubeconfig: {{ local_kubeconfig }}  (export KUBECONFIG=... before kubectl/deploy.sh)"
+
+  handlers:
+    - name: Restart k3s
+      ansible.builtin.systemd_service:
+        name: k3s
+        state: restarted
+      when: k3s_binary.stat.exists | default(false)
