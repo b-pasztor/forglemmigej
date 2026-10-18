@@ -149,6 +149,16 @@
       when: not k3s_binary.stat.exists
       changed_when: true
 
+    # Right after (re)starting, the API server refuses connections for a while,
+    # and `kubectl wait` fails at once instead of waiting.
+    - name: Wait for the k3s API server
+      ansible.builtin.command: k3s kubectl get --raw=/readyz
+      register: api_ready
+      until: api_ready.rc == 0
+      retries: 60
+      delay: 5
+      changed_when: false
+
     - name: Wait for the node to become Ready
       ansible.builtin.command: k3s kubectl wait --for=condition=Ready node --all --timeout=180s
       changed_when: false
