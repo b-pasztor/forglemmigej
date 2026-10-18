@@ -111,7 +111,7 @@ To run the production images locally: `docker compose --profile app up --build`
 - [x] Content pipeline: frequency list → dictionary entries → validated example sentences
 - [x] Review app with FSRS scheduling; every review logged with the champion's prediction
 - [x] Containers, k3s manifests, nightly database backup
-- [ ] Deploy to the homelab, phone access over Tailscale
+- [x] Deploy to the homelab (Ansible-provisioned Debian + k3s), phone access over Tailscale
 - [ ] Feature pipeline and the first challengers (pre-trained on public review logs)
 - [ ] MLflow tracking and the champion/challenger gate in CI
 - [ ] Grafana dashboards: calibration, drift, learning progress
