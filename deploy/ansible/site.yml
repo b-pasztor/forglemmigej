@@ -137,6 +137,19 @@
       notify: Restart k3s
       register: k3s_config
 
+    - name: Create the kubelet drop-in configuration directory
+      ansible.builtin.file:
+        path: /var/lib/rancher/k3s/agent/etc/kubelet.conf.d
+        state: directory
+        mode: "0755"
+
+    - name: Configure graceful node shutdown for the kubelet
+      ansible.builtin.template:
+        src: kubelet-graceful-shutdown.conf.j2
+        dest: /var/lib/rancher/k3s/agent/etc/kubelet.conf.d/50-graceful-shutdown.conf
+        mode: "0644"
+      notify: Restart k3s
+
     - name: Check whether k3s is installed
       ansible.builtin.stat:
         path: /usr/local/bin/k3s

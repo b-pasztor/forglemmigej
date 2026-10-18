@@ -1,0 +1,9 @@
+# Managed by deploy/ansible/site.yml
+# Graceful node shutdown: pods (PostgreSQL first of all) get time to stop
+# cleanly when the machine is switched off in the evening. Recent kubelets
+# accept these only in a config file, not as command-line flags; k3s reads
+# drop-in files from this directory after its own defaults.
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+shutdownGracePeriod: 90s
+shutdownGracePeriodCriticalPods: 30s

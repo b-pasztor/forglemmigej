@@ -4,8 +4,3 @@
 tls-san:
   - "{{ inventory_hostname }}"
   - "{{ tailscale_dns_name }}"
-kubelet-arg:
-  # Graceful node shutdown: pods (PostgreSQL first of all) get time to stop
-  # cleanly when the machine is switched off in the evening.
-  - "shutdown-grace-period=90s"
-  - "shutdown-grace-period-critical-pods=30s"
