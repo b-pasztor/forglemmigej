@@ -31,6 +31,17 @@ kubectl kustomize deploy/k8s \
 kubectl -n forglemmigej rollout status deployment/api --timeout=180s
 kubectl -n forglemmigej rollout status deployment/web --timeout=120s
 
+# Smoke test the content, not just the status code: "/" must be the app.
+if ! kubectl -n forglemmigej exec deploy/web -- wget -qO- http://127.0.0.1:8080/ | grep -q "_app/immutable"; then
+  echo "smoke test failed: / does not serve the forglemmigej app" >&2
+  exit 1
+fi
+if ! kubectl -n forglemmigej exec deploy/web -- wget -qO- http://127.0.0.1:8080/api/health | grep -q '"ok"'; then
+  echo "smoke test failed: /api/health is not ok" >&2
+  exit 1
+fi
+echo "==> smoke test passed"
+
 if [ "$import_content" = "--import-content" ]; then
   echo "==> importing learning content"
   job=$(sed "s/forglemmigej-api:latest/forglemmigej-api:$tag/" deploy/jobs/content-import.yaml \
