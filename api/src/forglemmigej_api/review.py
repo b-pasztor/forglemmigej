@@ -39,11 +39,16 @@ def start_of_day(now: datetime, timezone: str) -> datetime:
     return datetime.combine(local.date(), time.min, tzinfo=local.tzinfo)
 
 
-def introduced_today(session: Session, now: datetime, timezone: str) -> int:
+def new_words_today(session: Session, now: datetime, timezone: str) -> int:
+    """Words introduced today: a word's first card (recognition) counts; its second
+    card (cloze or recall) does not, so it never eats into the daily limit."""
     return session.scalar(
         select(func.count())
         .select_from(Card)
-        .where(Card.introduced_at >= start_of_day(now, timezone))
+        .where(
+            Card.introduced_at >= start_of_day(now, timezone),
+            Card.card_type == CardType.RECOGNITION,
+        )
     )
 
 
@@ -58,12 +63,13 @@ def _due_cards(now: datetime) -> Select:
     )
 
 
-def _new_cards() -> Select:
+def _new_cards(include_new_words: bool) -> Select:
     """New cards in curriculum order: survival phrases first, then by frequency.
-    A cloze card only comes once its item's recognition card has graduated to
-    review: right after the recognition card the sentence is still on screen."""
+    A word's second card (cloze or recall) only comes once its recognition card
+    has graduated to review: right after the first card the answer is still on
+    screen. With `include_new_words` false, only such second cards qualify."""
     recognition = aliased(Card)
-    return (
+    query = (
         select(Card)
         .join(Item, Item.id == Card.item_id)
         .outerjoin(
@@ -75,7 +81,7 @@ def _new_cards() -> Select:
         )
         .where(
             Card.status == CardStatus.NEW,
-            (Card.card_type != CardType.CLOZE)
+            (Card.card_type == CardType.RECOGNITION)
             | (recognition.status == CardStatus.REVIEW),
         )
         .order_by(
@@ -85,6 +91,9 @@ def _new_cards() -> Select:
             Card.id,
         )
     )
+    if not include_new_words:
+        query = query.where(Card.card_type != CardType.RECOGNITION)
+    return query
 
 
 @dataclass
@@ -97,10 +106,10 @@ class NextCard:
 def next_card(
     session: Session, now: datetime, timezone: str, new_per_day: int
 ) -> NextCard:
-    new_remaining = max(0, new_per_day - introduced_today(session, now, timezone))
+    new_remaining = max(0, new_per_day - new_words_today(session, now, timezone))
     card = session.scalars(_due_cards(now).limit(1)).first()
-    if card is None and new_remaining > 0:
-        card = session.scalars(_new_cards().limit(1)).first()
+    if card is None:
+        card = session.scalars(_new_cards(new_remaining > 0).limit(1)).first()
     next_due_at = None
     if card is None:
         next_due_at = session.scalar(

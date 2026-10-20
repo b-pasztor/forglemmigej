@@ -17,7 +17,8 @@ class Settings(BaseSettings):
 
     # Learning settings.
     timezone: str = "Europe/Zurich"  # where "today" starts and ends
-    new_cards_per_day: int = 10
+    # New words per day; a word's second card (cloze/recall) does not count.
+    new_words_per_day: int = 15
 
     def database_url(self, database: str | None = None) -> str:
         return (

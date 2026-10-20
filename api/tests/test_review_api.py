@@ -37,7 +37,7 @@ def clock() -> Clock:
 def client(db: Session, clock: Clock) -> Iterator[TestClient]:
     # Only this test's cards: start from an empty deck inside the rolled-back transaction.
     db.execute(delete(Card).where(~Card.id.in_(select(Review.card_id))))
-    settings = get_settings().model_copy(update={"new_cards_per_day": 3})
+    settings = get_settings().model_copy(update={"new_words_per_day": 3})
     app.dependency_overrides[get_session] = lambda: db
     app.dependency_overrides[utcnow] = lambda: clock.now
     app.dependency_overrides[get_settings] = lambda: settings
@@ -233,3 +233,31 @@ def test_stats(client: TestClient, db: Session) -> None:
         0,
         1,
     )
+
+
+def test_second_cards_do_not_use_the_new_word_limit(
+    client: TestClient, db: Session, clock: Clock
+) -> None:
+    words = [
+        add_word(db, word, rank) for rank, word in enumerate(["en", "to", "tre"], 1)
+    ]
+    for _ in range(3):  # the daily limit in these tests is 3 new words
+        card = client.get("/api/next").json()["card"]
+        assert card["card_type"] == "recognition"
+        client.post(f"/api/cards/{card['card_id']}/answer", json={"grade": 3})
+    assert client.get("/api/next").json()["new_remaining"] == 0
+
+    # Graduate the first word's recognition card; its recall card unlocks and
+    # comes even though no new words are left today.
+    clock.advance(minutes=15)
+    client.post(
+        f"/api/cards/{words[0][CardType.RECOGNITION]}/answer", json={"grade": 3}
+    )
+    clock.advance(minutes=1)
+    for _ in range(4):
+        card = client.get("/api/next").json()["card"]
+        if card is None or card["card_id"] == words[0][CardType.RECALL]:
+            break
+        client.post(f"/api/cards/{card['card_id']}/answer", json={"grade": 3})
+    assert card is not None and card["card_id"] == words[0][CardType.RECALL]
+    assert card["card_type"] == "recall"

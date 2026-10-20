@@ -22,7 +22,7 @@ from forglemmigej_api.review import (
     AnswerError,
     answer_card,
     due_soon_count,
-    introduced_today,
+    new_words_today,
     next_card,
     start_of_day,
 )
@@ -166,7 +166,7 @@ def end_session(session_id: int, db: DbSession, now: Now) -> SessionOut:
 
 @app.get("/api/next")
 def get_next(db: DbSession, now: Now, settings: AppSettings) -> NextOut:
-    result = next_card(db, now, settings.timezone, settings.new_cards_per_day)
+    result = next_card(db, now, settings.timezone, settings.new_words_per_day)
     return NextOut(
         card=card_out(db, result.card) if result.card else None,
         new_remaining=result.new_remaining,
@@ -216,7 +216,7 @@ def stats(db: DbSession, now: Now, settings: AppSettings) -> StatsOut:
     return StatsOut(
         reviewed_today=reviewed,
         correct_today=correct,
-        new_today=introduced_today(db, now, settings.timezone),
+        new_today=new_words_today(db, now, settings.timezone),
         due_now=due_soon_count(db, now, timedelta(0)),
         due_next_7_days=due_soon_count(db, now, timedelta(days=7)),
         cards_by_status={str(k): v for k, v in by_status.items()},
