@@ -112,8 +112,10 @@ To run the production images locally: `docker compose --profile app up --build`
 - [x] Review app with FSRS scheduling; every review logged with the champion's prediction
 - [x] Containers, k3s manifests, nightly database backup
 - [x] Deploy to the homelab (Ansible-provisioned Debian + k3s), phone access over Tailscale
-- [ ] Feature pipeline and the first challengers (pre-trained on public review logs)
-- [ ] MLflow tracking and the champion/challenger gate in CI
+- [x] Feature pipeline and the first challengers, evaluated on public review logs (notebooks 01 and 02)
+- [x] Model registry and shadow predictions: challengers predict every review next to the champion
+- [x] MLflow tracking and the nightly training job (shadow evaluation, FSRS fitting)
+- [ ] Champion/challenger promotion gate in CI
 - [ ] Grafana dashboards: calibration, drift, learning progress
 - [ ] Public showcase on GitHub Pages: a published model report, then a try-it demo running fully in the browser
 - [ ] Audio (Danish TTS), pronunciation practice (Whisper), an LLM helper for grammar questions
