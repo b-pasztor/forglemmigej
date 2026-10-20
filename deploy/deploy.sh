@@ -32,6 +32,7 @@ kubectl kustomize deploy/k8s \
 kubectl -n forglemmigej rollout status deployment/api --timeout=180s
 kubectl -n forglemmigej rollout status deployment/web --timeout=120s
 kubectl -n forglemmigej rollout status deployment/mlflow --timeout=180s
+kubectl -n forglemmigej rollout status deployment/grafana --timeout=180s
 
 # Smoke test the content, not just the status code: "/" must be the app and the
 # API must answer through nginx. A few retries cover the end of the rollout.

@@ -48,7 +48,7 @@ is not a side report. Better predictions mean fewer reviews for the same retenti
 - **Why the gate is not a CI job:** the review data stays in the homelab (Tailscale only, no public access) and the node is off in the evening and while travelling, so a hosted CI runner could not reach it without opening a path in. The gate runs next to the data, in the nightly job; CI tests the gate's logic.
 - **Drift:** forgetting behaviour changes, e.g. after a two-week break, or as the learner improves and new words stick faster. Monitoring must detect it (prediction error over time, input distribution changes).
 - **Honest expectation:** with little personal data an own model will likely not beat FSRS at first. The gate rejecting it is the system working as intended. Challengers are pre-trained on a public review-log dataset.
-- **Dashboards (Grafana):** model health (calibration: predicted vs actual recall; log loss per model version, champion vs shadow challengers on the same reviews; drift alerts; promotion history) and learning progress (known words, reviews per day, retention, 7-day workload forecast).
+- **Dashboards (Grafana, `deploy/k8s/dashboards/`):** read straight from PostgreSQL by a read-only user, since predictions, reviews and promotions already live there; Prometheus is for system metrics and alerts later. Model health (calibration: predicted vs actual recall; log loss per model version, champion vs shadow challengers on the same reviews; drift alerts; promotion history) and learning progress (known words, reviews per day, retention, 7-day workload forecast).
 - **Stretch:** cold-start difficulty prediction for new words (e.g. compounds of known words are easier), to make the curriculum's pacing smarter.
 
 ## Data and ML rules (mandatory)
@@ -105,7 +105,7 @@ Order: the core loop first; the model report comes with the retraining work; the
 - **ML:** pandas, scikit-learn, LightGBM, the `fsrs` package; Jupyter notebooks for exploration.
 - **Experiment tracking:** MLflow (SQLite backend on a volume; one writer is enough). The model registry is the `memory_models` table, since the scheduler reads it on every answer.
 - **Orchestration:** Kubernetes CronJobs: `nightly-training` at 19:30, the backup at 20:00 (Prefect or Dagster if it grows).
-- **Monitoring:** Prometheus + Grafana; drift reports with Evidently.
+- **Monitoring:** Grafana on PostgreSQL for model and learning metrics; Prometheus for system metrics and alerting later; drift reports with Evidently.
 - **Infrastructure:** Debian 13 + Ansible, single-node k3s; Docker Compose for local development only.
 - **CI/CD:** GitHub Actions (public repository); self-hosted runners must never run pull requests from forks.
 

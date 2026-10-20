@@ -56,9 +56,9 @@ The auth key comes from the Tailscale admin console (Settings → Keys → Gener
 key; one-off is enough). `-K` asks for your sudo password on the node. Re-running the
 playbook is safe.
 
-## 2. Create the database secret (once)
+## 2. Create the secrets (once)
 
-The password never goes into git:
+The passwords never go into git:
 
 ```bash
 kubectl create namespace forglemmigej
@@ -66,6 +66,10 @@ kubectl -n forglemmigej create secret generic forglemmigej-db \
   --from-literal=POSTGRES_DB=forglemmigej \
   --from-literal=POSTGRES_USER=forglemmigej \
   --from-literal=POSTGRES_PASSWORD="$(openssl rand -base64 24)"
+# Grafana: its admin password, and the password of its read-only database user.
+kubectl -n forglemmigej create secret generic forglemmigej-grafana \
+  --from-literal=GF_SECURITY_ADMIN_PASSWORD="$(openssl rand -base64 18 | tr -d '/+=')" \
+  --from-literal=GRAFANA_DB_PASSWORD="$(openssl rand -base64 24 | tr -d '/+=')"
 ```
 
 ## 3. Deploy
@@ -89,6 +93,21 @@ MLflow UI from the laptop:
 ```bash
 kubectl -n forglemmigej create job --from=cronjob/nightly-training train-now
 kubectl -n forglemmigej port-forward svc/mlflow 5000:5000      # then http://localhost:5000
+```
+
+## Grafana
+
+`https://<node>.<tailnet>.ts.net/grafana/`: two dashboards, *Model health*
+(log loss per model on shared reviews, calibration, predicted vs actual recall
+as the drift signal, the gate's evidence, registry and promotion history) and
+*Learning progress* (known words, retention, reviews, the week's workload).
+They query PostgreSQL directly as `grafana_reader` (SELECT only, read-only
+transactions). Dashboards live in `deploy/k8s/dashboards/` and are read-only in
+the UI: change the JSON and redeploy. Visitors can view without logging in; the
+admin password:
+
+```bash
+kubectl -n forglemmigej get secret forglemmigej-grafana -o jsonpath='{.data.GF_SECURITY_ADMIN_PASSWORD}' | base64 -d
 ```
 
 ### The gate, and rolling back

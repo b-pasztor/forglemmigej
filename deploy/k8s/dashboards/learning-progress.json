@@ -1,0 +1,489 @@
+{
+  "uid": "learning-progress",
+  "title": "Learning progress",
+  "description": "Reviews, retention, known words and the coming week's workload.",
+  "tags": [
+    "forglemmigej"
+  ],
+  "timezone": "Europe/Zurich",
+  "schemaVersion": 41,
+  "editable": false,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "refresh": "",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Known words (recall ≥ 90% now)",
+      "description": "Words whose recognition card is not due yet: the model predicts at least 90% recall right now.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(DISTINCT item_id) AS \"known words\"\nFROM cards\nWHERE card_type = 'recognition' AND status = 'review' AND due_at > now()"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "id": 1
+    },
+    {
+      "type": "stat",
+      "title": "Words started",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(DISTINCT item_id) AS \"words started\"\nFROM cards WHERE card_type = 'recognition' AND introduced_at IS NOT NULL"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "id": 2
+    },
+    {
+      "type": "stat",
+      "title": "Retention, last 7 days",
+      "description": "Share of reviews (a day or more after the previous one) that were recalled. Target: 90%.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH r AS (\n  SELECT id, card_id, reviewed_at, (grade > 1)::int AS recalled,\n         EXTRACT(EPOCH FROM reviewed_at - lag(reviewed_at) OVER (\n           PARTITION BY card_id ORDER BY reviewed_at, id)) / 86400 AS gap_days\n  FROM reviews\n)\nSELECT avg(recalled) AS \"retention\"\nFROM r WHERE gap_days >= 1 AND reviewed_at > now() - interval '7 days'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.8
+              },
+              {
+                "color": "green",
+                "value": 0.87
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 3
+    },
+    {
+      "type": "stat",
+      "title": "Reviews today",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS \"reviews today\" FROM reviews\nWHERE (reviewed_at AT TIME ZONE 'Europe/Zurich')::date = (now() AT TIME ZONE 'Europe/Zurich')::date"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "id": 4
+    },
+    {
+      "type": "timeseries",
+      "title": "Reviews and new words per day",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroupAlias(reviewed_at, '1d'), count(*) AS \"reviews\"\nFROM reviews WHERE $__timeFilter(reviewed_at) GROUP BY 1 ORDER BY 1"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroupAlias(introduced_at, '1d'), count(*) AS \"new words\"\nFROM cards WHERE card_type = 'recognition' AND $__timeFilter(introduced_at)\nGROUP BY 1 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "decimals": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1
+          }
+        },
+        "overrides": []
+      },
+      "id": 5
+    },
+    {
+      "type": "timeseries",
+      "title": "Retention per day (reviews a day or more apart)",
+      "description": "The scheduler aims at 90%: much lower means the model is too optimistic, much higher means reviews come earlier than needed.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 5,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "WITH r AS (\n  SELECT id, card_id, reviewed_at, (grade > 1)::int AS recalled,\n         EXTRACT(EPOCH FROM reviewed_at - lag(reviewed_at) OVER (\n           PARTITION BY card_id ORDER BY reviewed_at, id)) / 86400 AS gap_days\n  FROM reviews\n)\nSELECT $__timeGroupAlias(reviewed_at, '1d'), avg(recalled) AS \"retention\", count(*) AS \"reviews\"\nFROM r WHERE gap_days >= 1 AND $__timeFilter(reviewed_at) GROUP BY 1 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0.5,
+          "max": 1,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "pointSize": 6,
+            "showPoints": "always",
+            "spanNulls": true,
+            "fillOpacity": 0,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0.9
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "reviews"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "viz": true,
+                  "legend": true,
+                  "tooltip": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "id": 6
+    },
+    {
+      "type": "barchart",
+      "title": "Workload forecast: cards due per day",
+      "description": "Reviews already scheduled for the next 7 days (overdue cards count today), before any new words.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH days AS (\n  SELECT d::date AS day\n  FROM generate_series((now() AT TIME ZONE 'Europe/Zurich')::date,\n                       (now() AT TIME ZONE 'Europe/Zurich')::date + 6, interval '1 day') AS d\n)\nSELECT to_char(days.day, 'Dy DD.MM') AS \"day\", count(c.id) AS \"cards due\"\nFROM days LEFT JOIN cards c\n  ON c.status IN ('learning', 'review')\n AND greatest((due_at AT TIME ZONE 'Europe/Zurich')::date, (now() AT TIME ZONE 'Europe/Zurich')::date) = days.day\nGROUP BY days.day ORDER BY days.day"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "xField": "day",
+        "showValue": "always",
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "id": 7
+    },
+    {
+      "type": "timeseries",
+      "title": "Minutes answering per day",
+      "description": "Sum of answer times (each capped at 2 minutes, so a forgotten phone does not count).",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 14,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroupAlias(reviewed_at, '1d'),\n       sum(least(response_time_ms, 120000)) / 60000.0 AS \"minutes\"\nFROM reviews WHERE $__timeFilter(reviewed_at) GROUP BY 1 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "decimals": 1,
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1
+          }
+        },
+        "overrides": []
+      },
+      "id": 8
+    },
+    {
+      "type": "piechart",
+      "title": "Cards by status",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT status AS \"status\", count(*) AS \"cards\" FROM cards\nWHERE status <> 'new' GROUP BY status ORDER BY 2 DESC"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "values": true,
+          "calcs": [],
+          "fields": ""
+        },
+        "pieType": "donut",
+        "displayLabels": [
+          "name",
+          "value"
+        ],
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "right"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "id": 9
+    },
+    {
+      "type": "table",
+      "title": "Hardest cards (most lapses)",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 23,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT i.danish AS \"word\", c.card_type AS \"card\", count(*) AS \"reviews\",\n       count(*) FILTER (WHERE r.grade = 1) AS \"forgotten\"\nFROM reviews r JOIN cards c ON c.id = r.card_id JOIN items i ON i.id = c.item_id\nGROUP BY i.danish, c.card_type\nHAVING count(*) FILTER (WHERE r.grade = 1) > 0\nORDER BY 4 DESC, 3 DESC LIMIT 15"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "id": 10
+    }
+  ],
+  "links": [
+    {
+      "title": "Model health",
+      "type": "link",
+      "url": "/grafana/d/model-health"
+    },
+    {
+      "title": "Learning progress",
+      "type": "link",
+      "url": "/grafana/d/learning-progress"
+    }
+  ]
+}

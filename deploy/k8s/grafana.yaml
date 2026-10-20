@@ -1,0 +1,181 @@
+# Grafana: model health and learning progress, read straight from PostgreSQL
+# (the predictions, reviews and promotions are already there; no exporter needed).
+# Dashboards and the data source are provisioned from this repository, so they
+# are code: edit deploy/k8s/dashboards/*.json and redeploy.
+#
+# https://<node>/grafana/ over Tailscale; anonymous visitors can view, the admin
+# password is in the hand-made secret `forglemmigej-grafana` (see deploy/README.md).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  selector:
+    app.kubernetes.io/name: grafana
+  ports:
+    - port: 3000
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-provisioning
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: forglemmigej
+        uid: forglemmigej
+        type: grafana-postgresql-datasource
+        url: postgres:5432
+        user: grafana_reader
+        isDefault: true
+        jsonData:
+          database: ${POSTGRES_DB}
+          sslmode: disable
+          postgresVersion: 1800
+          timezone: Europe/Zurich
+        secureJsonData:
+          password: ${GRAFANA_DB_PASSWORD}
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: forglemmigej
+        type: file
+        allowUiUpdates: false
+        options:
+          path: /var/lib/grafana/dashboards
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # SQLite state on the volume
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: grafana
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: grafana
+    spec:
+      enableServiceLinks: false # see api.yaml
+      securityContext:
+        fsGroup: 472 # grafana's group, so it can write its volume
+      initContainers:
+        # A read-only database user for the dashboards: SELECT on the tables
+        # they need, read-only transactions, short statement timeout.
+        # Idempotent; also resets the password if the secret changed.
+        - name: db-reader
+          image: postgres:18
+          envFrom:
+            - secretRef:
+                name: forglemmigej-db
+          env:
+            - name: PGHOST
+              value: postgres
+            - name: GRAFANA_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: forglemmigej-grafana
+                  key: GRAFANA_DB_PASSWORD
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              until pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t 2 >/dev/null; do sleep 5; done
+              PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+                -v ON_ERROR_STOP=1 -v pw="$GRAFANA_DB_PASSWORD" -v db="$POSTGRES_DB" <<'SQL'
+              SELECT 'CREATE ROLE grafana_reader LOGIN'
+              WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'grafana_reader') \gexec
+              ALTER ROLE grafana_reader PASSWORD :'pw';
+              ALTER ROLE grafana_reader SET default_transaction_read_only = on;
+              ALTER ROLE grafana_reader SET statement_timeout = '10s';
+              GRANT CONNECT ON DATABASE :"db" TO grafana_reader;
+              GRANT USAGE ON SCHEMA public TO grafana_reader;
+              GRANT SELECT ON reviews, predictions, cards, items, memory_models, model_promotions
+                TO grafana_reader;
+              SQL
+      containers:
+        - name: grafana
+          image: grafana/grafana:12.2.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: forglemmigej-db
+                  key: POSTGRES_DB
+            - name: GRAFANA_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: forglemmigej-grafana
+                  key: GRAFANA_DB_PASSWORD
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: forglemmigej-grafana
+                  key: GF_SECURITY_ADMIN_PASSWORD
+            # Served under /grafana/ by the same ingress as the app.
+            - name: GF_SERVER_ROOT_URL
+              value: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "true"
+            # Only reachable over Tailscale: visitors may look, not edit.
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: Viewer
+            - name: GF_USERS_ALLOW_SIGN_UP
+              value: "false"
+            - name: GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH
+              value: /var/lib/grafana/dashboards/model-health.json
+            - name: GF_ANALYTICS_REPORTING_ENABLED
+              value: "false"
+            - name: GF_ANALYTICS_CHECK_FOR_UPDATES
+              value: "false"
+            - name: GF_NEWS_NEWS_FEED_ENABLED
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/grafana
+            - name: provisioning
+              mountPath: /etc/grafana/provisioning/datasources/datasources.yaml
+              subPath: datasources.yaml
+            - name: provisioning
+              mountPath: /etc/grafana/provisioning/dashboards/dashboards.yaml
+              subPath: dashboards.yaml
+            - name: dashboards
+              mountPath: /var/lib/grafana/dashboards
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: grafana
+        - name: provisioning
+          configMap:
+            name: grafana-provisioning
+        - name: dashboards
+          configMap:
+            name: grafana-dashboards

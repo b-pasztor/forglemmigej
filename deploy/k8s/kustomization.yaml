@@ -10,6 +10,14 @@ resources:
   - backup.yaml
   - mlflow.yaml
   - training.yaml
+  - grafana.yaml
+configMapGenerator:
+  # Dashboards as code; the name gets a content hash, so a changed dashboard
+  # rolls Grafana.
+  - name: grafana-dashboards
+    files:
+      - dashboards/model-health.json
+      - dashboards/learning-progress.json
 labels:
   - pairs:
       app.kubernetes.io/part-of: forglemmigej

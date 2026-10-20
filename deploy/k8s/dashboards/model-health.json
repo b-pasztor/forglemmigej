@@ -1,0 +1,371 @@
+{
+  "uid": "model-health",
+  "title": "Model health",
+  "description": "Champion vs shadow challengers on the same reviews; calibration; drift; the gate.",
+  "tags": [
+    "forglemmigej"
+  ],
+  "timezone": "Europe/Zurich",
+  "schemaVersion": 41,
+  "editable": false,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "refresh": "",
+  "panels": [
+    {
+      "type": "text",
+      "title": "How to read this",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Every review is predicted by every active model *before* the answer (shadow mode). Only reviews **at least a day** after the card's previous review count: minutes after learning every model says ~100%. Lower log loss is better; a calibrated model's *predicted* line sits on the *actual* line. The gate promotes an FSRS challenger after 300 such reviews if it wins log loss in 95% of bootstrap resamples and is not worse calibrated."
+      },
+      "id": 1
+    },
+    {
+      "type": "timeseries",
+      "title": "Log loss per model (shared reviews, daily)",
+      "description": "Mean log loss per day on the reviews that every active model predicted. Lower is better.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "WITH r AS (\n  SELECT id, card_id, reviewed_at, (grade > 1)::int AS recalled,\n         EXTRACT(EPOCH FROM reviewed_at - lag(reviewed_at) OVER (\n           PARTITION BY card_id ORDER BY reviewed_at, id)) / 86400 AS gap_days\n  FROM reviews\n), active AS (SELECT version FROM memory_models WHERE role IN ('champion', 'challenger')),\np AS (\n  SELECT p.review_id, p.model_version, r.reviewed_at, -(r.recalled * ln(greatest(least(p.predicted_recall, 1 - 1e-6), 1e-6)) + (1 - r.recalled) * ln(1 - greatest(least(p.predicted_recall, 1 - 1e-6), 1e-6))) AS loss\n  FROM predictions p JOIN r ON r.id = p.review_id\n  WHERE r.gap_days >= 1 AND p.model_version IN (SELECT version FROM active)\n    AND $__timeFilter(r.reviewed_at)\n),\nshared AS (\n  SELECT review_id FROM p GROUP BY review_id\n  HAVING count(*) = (SELECT count(*) FROM active)\n)\nSELECT $__timeGroupAlias(reviewed_at, '1d'), model_version AS metric, avg(loss) AS value\nFROM p WHERE review_id IN (SELECT review_id FROM shared)\nGROUP BY 1, 2 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "decimals": 3,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "pointSize": 6,
+            "showPoints": "always",
+            "spanNulls": true,
+            "fillOpacity": 0
+          }
+        },
+        "overrides": []
+      },
+      "id": 2
+    },
+    {
+      "type": "table",
+      "title": "Gate evidence per challenger",
+      "description": "How much evidence each challenger has collected against the current champion.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 3,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH r AS (\n  SELECT id, card_id, reviewed_at, (grade > 1)::int AS recalled,\n         EXTRACT(EPOCH FROM reviewed_at - lag(reviewed_at) OVER (\n           PARTITION BY card_id ORDER BY reviewed_at, id)) / 86400 AS gap_days\n  FROM reviews\n),\nchampion AS (SELECT version FROM memory_models WHERE role = 'champion'),\ncounted AS (\n  SELECT q.review_id FROM predictions q JOIN r ON r.id = q.review_id\n  WHERE r.gap_days >= 1 AND q.model_version = (SELECT version FROM champion)\n)\nSELECT m.version AS \"challenger\", m.kind AS \"kind\", m.created_at AS \"registered\",\n       count(p.review_id) AS \"shared reviews (≥ 1 day)\",\n       CASE WHEN m.kind = 'fsrs' THEN 300 END AS \"needed\",\n       CASE WHEN m.kind = 'fsrs' THEN 'can be promoted' ELSE 'compared only' END AS \"note\"\nFROM memory_models m\nLEFT JOIN predictions p\n  ON p.model_version = m.version AND p.review_id IN (SELECT review_id FROM counted)\nWHERE m.role = 'challenger'\nGROUP BY m.version, m.kind, m.created_at ORDER BY m.created_at"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "id": 3
+    },
+    {
+      "type": "timeseries",
+      "title": "Champion: predicted vs actual recall (daily)",
+      "description": "Drift shows up as the two lines drifting apart: the model expects more (or less) than the learner actually recalls, e.g. after a break.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "WITH r AS (\n  SELECT id, card_id, reviewed_at, (grade > 1)::int AS recalled,\n         EXTRACT(EPOCH FROM reviewed_at - lag(reviewed_at) OVER (\n           PARTITION BY card_id ORDER BY reviewed_at, id)) / 86400 AS gap_days\n  FROM reviews\n)\nSELECT $__timeGroupAlias(r.reviewed_at, '1d'),\n       avg(p.predicted_recall) AS \"predicted\", avg(r.recalled) AS \"actual\"\nFROM r JOIN predictions p ON p.review_id = r.id AND p.is_champion\nWHERE r.gap_days >= 1 AND $__timeFilter(r.reviewed_at)\nGROUP BY 1 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0.5,
+          "max": 1,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "pointSize": 6,
+            "showPoints": "always",
+            "spanNulls": true,
+            "fillOpacity": 0
+          }
+        },
+        "overrides": []
+      },
+      "id": 4
+    },
+    {
+      "type": "barchart",
+      "title": "Calibration of the champion (time range)",
+      "description": "Per bin of predicted recall: what the champion said and how often the card was actually recalled. Equal bars mean a calibrated model.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH r AS (\n  SELECT id, card_id, reviewed_at, (grade > 1)::int AS recalled,\n         EXTRACT(EPOCH FROM reviewed_at - lag(reviewed_at) OVER (\n           PARTITION BY card_id ORDER BY reviewed_at, id)) / 86400 AS gap_days\n  FROM reviews\n),\nb AS (\n  SELECT least(floor(p.predicted_recall * 10), 9)::int AS bin, p.predicted_recall, r.recalled\n  FROM r JOIN predictions p ON p.review_id = r.id AND p.is_champion\n  WHERE r.gap_days >= 1 AND $__timeFilter(r.reviewed_at)\n)\nSELECT (bin * 10) || '–' || (bin * 10 + 10) || '%' AS \"predicted bin\",\n       avg(predicted_recall) AS \"predicted\", avg(recalled) AS \"actual\", count(*) AS \"reviews\"\nFROM b GROUP BY bin ORDER BY bin"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "reviews"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "viz": true,
+                  "legend": true,
+                  "tooltip": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "predicted bin",
+        "showValue": "never",
+        "groupWidth": 0.7,
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "id": 5
+    },
+    {
+      "type": "table",
+      "title": "Calibration of every active model (time range)",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH r AS (\n  SELECT id, card_id, reviewed_at, (grade > 1)::int AS recalled,\n         EXTRACT(EPOCH FROM reviewed_at - lag(reviewed_at) OVER (\n           PARTITION BY card_id ORDER BY reviewed_at, id)) / 86400 AS gap_days\n  FROM reviews\n), active AS (SELECT version FROM memory_models WHERE role IN ('champion', 'challenger'))\nSELECT p.model_version AS \"model\",\n       (least(floor(p.predicted_recall * 10), 9)::int * 10) || '%+' AS \"predicted bin\",\n       count(*) AS \"reviews\",\n       round(avg(p.predicted_recall)::numeric, 3) AS \"predicted\",\n       round(avg(r.recalled)::numeric, 3) AS \"actual\"\nFROM r JOIN predictions p ON p.review_id = r.id\nWHERE r.gap_days >= 1 AND p.model_version IN (SELECT version FROM active)\n  AND $__timeFilter(r.reviewed_at)\nGROUP BY 1, least(floor(p.predicted_recall * 10), 9)::int ORDER BY 1, 2"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "id": 6
+    },
+    {
+      "type": "timeseries",
+      "title": "Predictions logged per model (daily)",
+      "description": "Shadow-mode coverage: every active model should predict every review after the first.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 21,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroupAlias(r.reviewed_at, '1d'), p.model_version AS metric, count(*) AS value\nFROM predictions p JOIN reviews r ON r.id = p.review_id\nWHERE $__timeFilter(r.reviewed_at)\nGROUP BY 1, 2 ORDER BY 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "decimals": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1
+          }
+        },
+        "overrides": []
+      },
+      "id": 7
+    },
+    {
+      "type": "table",
+      "title": "Model registry",
+      "description": "",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 29,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT version, kind, role, trained_on_reviews AS \"trained on reviews\",\n       trained_until AS \"trained until\", created_at AS \"registered\", notes\nFROM memory_models ORDER BY created_at DESC"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "id": 8
+    },
+    {
+      "type": "table",
+      "title": "Promotion history",
+      "description": "Every change of champion: by the gate (with its evidence) or a manual rollback.",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "forglemmigej"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 29,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "forglemmigej"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT promoted_at AS \"when\", previous_version || ' → ' || version AS \"change\", reason,\n       evaluation->>'n' AS \"reviews\",\n       round((evaluation->>'p_better')::numeric, 3) AS \"p better\",\n       round((evaluation->>'champion_log_loss')::numeric, 4) AS \"old log loss\",\n       round((evaluation->>'challenger_log_loss')::numeric, 4) AS \"new log loss\",\n       cards_rebuilt AS \"cards rebuilt\"\nFROM model_promotions ORDER BY promoted_at DESC"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "id": 9
+    }
+  ],
+  "links": [
+    {
+      "title": "Model health",
+      "type": "link",
+      "url": "/grafana/d/model-health"
+    },
+    {
+      "title": "Learning progress",
+      "type": "link",
+      "url": "/grafana/d/learning-progress"
+    }
+  ]
+}
