@@ -18,7 +18,6 @@ from forglemmigej_api.models import (
     Prediction,
     Review,
 )
-from forglemmigej_api.scheduling import CHAMPION_MODEL
 
 
 class Clock:
@@ -148,7 +147,7 @@ def test_later_answer_stores_the_champion_prediction(
     predicted = client.post(url, json={"grade": 3}).json()["predicted_recall"]
     assert 0 < predicted <= 1
     prediction = db.scalars(select(Prediction)).one()
-    assert (prediction.model_version, prediction.is_champion) == (CHAMPION_MODEL, True)
+    assert (prediction.model_version, prediction.is_champion) == ("fsrs6-default", True)
     assert prediction.predicted_recall == pytest.approx(predicted)
 
 

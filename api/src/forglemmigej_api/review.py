@@ -25,7 +25,13 @@ from forglemmigej_api.models import (
     Prediction,
     Review,
 )
-from forglemmigej_api.scheduling import CHAMPION_MODEL, apply_review, predict_recall
+from forglemmigej_api.scheduling import (
+    active_models,
+    apply_review,
+    predict_from_history,
+    predict_from_state,
+)
+from forglemmigej_api.training.dataset import load_card_history
 
 
 def start_of_day(now: datetime, timezone: str) -> datetime:
@@ -152,8 +158,16 @@ def answer_card(
             raise AnswerError("self-graded cards need a grade")
         correct, mode = grade > Grade.AGAIN, AnswerMode.SELF_GRADE
 
-    # Point-in-time: the prediction only uses the state before this answer.
-    predicted = predict_recall(card.scheduler_state, now)
+    # Point-in-time: every prediction only uses what was known before this answer.
+    champion, challengers = active_models(session)
+    predicted = predict_from_state(champion, card.scheduler_state, now)
+    shadow: dict[str, float] = {}
+    if challengers and predicted is not None:
+        history = load_card_history(session, card.id, before=now)
+        for challenger in challengers:
+            value = predict_from_history(challenger, history, now)
+            if value is not None:
+                shadow[challenger.version] = value
 
     review = Review(
         card_id=card.id,
@@ -170,14 +184,24 @@ def answer_card(
         session.add(
             Prediction(
                 review_id=review.id,
-                model_version=CHAMPION_MODEL,
+                model_version=champion.version,
                 predicted_recall=predicted,
                 is_champion=True,
             )
         )
+    # Shadow mode: challengers predict every review but do not schedule.
+    for version, value in shadow.items():
+        session.add(
+            Prediction(
+                review_id=review.id,
+                model_version=version,
+                predicted_recall=value,
+                is_champion=False,
+            )
+        )
 
     card.scheduler_state, card.due_at, card.status = apply_review(
-        card.scheduler_state, grade, now
+        champion, card.scheduler_state, grade, now
     )
     if card.introduced_at is None:
         card.introduced_at = now

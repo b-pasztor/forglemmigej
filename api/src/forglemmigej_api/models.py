@@ -222,3 +222,42 @@ class Prediction(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class ModelRole(enum.StrEnum):
+    CHAMPION = "champion"  # schedules the reviews
+    CHALLENGER = "challenger"  # predicts every review in shadow mode
+    RETIRED = "retired"  # no longer predicts; kept for traceability
+
+
+class MemoryModel(Base):
+    """A versioned memory model: the model registry until MLflow takes over.
+
+    The parameters are stored here rather than taken from the package defaults,
+    so a library upgrade cannot silently change a live model, and every logged
+    prediction can be traced back to an exact set of parameters.
+    """
+
+    __tablename__ = "memory_models"
+    __table_args__ = (
+        # Exactly one model schedules at a time.
+        Index(
+            "uq_memory_models_one_champion",
+            "role",
+            unique=True,
+            postgresql_where=text("role = 'champion'"),
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    version: Mapped[str] = mapped_column(Text, unique=True)
+    kind: Mapped[str] = mapped_column(Text)  # "fsrs" for now
+    role: Mapped[ModelRole] = mapped_column(_enum(ModelRole, "model_role"))
+    parameters: Mapped[list[float]] = mapped_column(JSONB)
+    # Training data: how many reviews, up to which moment (for reproducibility).
+    trained_on_reviews: Mapped[int | None]
+    trained_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    notes: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

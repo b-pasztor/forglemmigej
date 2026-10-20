@@ -28,6 +28,7 @@ dev = [
     "ruff>=0.17.0",
 ]
 ml = [
+    "fsrs[optimizer]>=6.3.2",
     "ipykernel>=7.4.0",
     "lightgbm>=4.7.0",
     "matplotlib>=3.11.2",
@@ -36,3 +37,13 @@ ml = [
     "pyarrow>=26.0.0",
     "scikit-learn>=1.9.1",
 ]
+
+# PyTorch (needed by the FSRS optimizer) from the CPU-only index: there is no
+# GPU in the homelab, and the default Linux wheels pull in gigabytes of CUDA.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
