@@ -101,6 +101,7 @@ starts predicting in shadow mode with the next answer; no restart is needed.
 kubectl -n forglemmigej port-forward svc/postgres 15432:5432 &
 kubectl -n forglemmigej port-forward svc/mlflow 5000:5000 &
 export POSTGRES_PORT=15432 MLFLOW_TRACKING_URI=http://localhost:5000
+export PYTHONUTF8=1   # Git Bash on Windows: MLflow prints emoji
 export POSTGRES_PASSWORD="$(kubectl -n forglemmigej get secret forglemmigej-db -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d)"
 cd api && uv run --group ml python -m forglemmigej_api.training.pretrain_lightgbm --register
 ```
