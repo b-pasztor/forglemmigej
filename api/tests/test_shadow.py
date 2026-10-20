@@ -1,12 +1,14 @@
 from datetime import UTC, datetime, timedelta
 
+import lightgbm
+import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from forglemmigej_api.features import PastReview
+from forglemmigej_api.features import PastReview, card_features
 from forglemmigej_api.models import (
     Card,
     CardType,
@@ -16,11 +18,13 @@ from forglemmigej_api.models import (
     Prediction,
 )
 from forglemmigej_api.scheduling import (
+    NoChampionError,
     active_models,
     apply_review,
     predict_from_history,
     predict_from_state,
 )
+from forglemmigej_api.training.dataset import load_card_info
 
 from .test_review_api import Clock, add_word, client, clock  # noqa: F401 - fixtures
 
@@ -107,3 +111,71 @@ def test_retired_models_stop_predicting(db: Session) -> None:
     db.flush()
     _, challengers = active_models(db)
     assert challengers == []
+
+
+def tiny_lightgbm(features: tuple[str, ...]) -> lightgbm.Booster:
+    """A small booster on synthetic data: recalled when reviewed again soon."""
+    rng = np.random.default_rng(0)
+    x = rng.uniform(0, 1, size=(500, len(features)))
+    x[:, 0] = rng.uniform(0, 30, size=500)  # elapsed_days
+    y = (x[:, 0] < 5).astype(int)
+    data = lightgbm.Dataset(x, y, feature_name=list(features))
+    params = {"objective": "binary", "verbose": -1, "num_threads": 1}
+    return lightgbm.train(params, data, num_boost_round=10)
+
+
+def test_lightgbm_challenger_predicts_from_the_shared_features(
+    client: TestClient,  # noqa: F811
+    db: Session,
+    clock: Clock,  # noqa: F811
+) -> None:
+    features = ("elapsed_days", "n_reviews", "fsrs_recall", "word_length")
+    booster = tiny_lightgbm(features)
+    db.add(
+        MemoryModel(
+            version="lightgbm-test",
+            kind="lightgbm",
+            role=ModelRole.CHALLENGER,
+            parameters={"features": list(features), "model": booster.model_to_string()},
+        )
+    )
+    db.flush()
+    ids = add_word(db, "hus", 1)
+    url = f"/api/cards/{ids[CardType.RECOGNITION]}/answer"
+    first = clock.now
+    client.post(url, json={"grade": 3})
+    clock.advance(days=3)
+    client.post(url, json={"grade": 3})
+
+    shadow = db.scalars(
+        select(Prediction).where(Prediction.model_version == "lightgbm-test")
+    ).one()
+    # The same number as the shared feature function + the booster (no skew).
+    expected = card_features(
+        [PastReview(first, 3)], clock.now, load_card_info(db, ids[CardType.RECOGNITION])
+    )
+    row = np.array([[expected[name] for name in features]])
+    assert shadow.predicted_recall == pytest.approx(booster.predict(row)[0])
+
+
+def test_only_fsrs_can_be_champion(db: Session) -> None:
+    champion = db.scalars(
+        select(MemoryModel).where(MemoryModel.role == ModelRole.CHAMPION)
+    ).one()
+    champion.role = ModelRole.RETIRED
+    db.flush()
+    booster = tiny_lightgbm(("elapsed_days",))
+    db.add(
+        MemoryModel(
+            version="lightgbm-champion",
+            kind="lightgbm",
+            role=ModelRole.CHAMPION,
+            parameters={
+                "features": ["elapsed_days"],
+                "model": booster.model_to_string(),
+            },
+        )
+    )
+    db.flush()
+    with pytest.raises(NoChampionError):
+        active_models(db)

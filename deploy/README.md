@@ -91,6 +91,20 @@ kubectl -n forglemmigej create job --from=cronjob/nightly-training train-now
 kubectl -n forglemmigej port-forward svc/mlflow 5000:5000      # then http://localhost:5000
 ```
 
+### Registering the pre-trained LightGBM challenger
+
+The LightGBM challenger is trained on the laptop (the public review logs are not
+on the node) and registered in the node's database through port-forwards. It
+starts predicting in shadow mode with the next answer; no restart is needed.
+
+```bash
+kubectl -n forglemmigej port-forward svc/postgres 15432:5432 &
+kubectl -n forglemmigej port-forward svc/mlflow 5000:5000 &
+export POSTGRES_PORT=15432 MLFLOW_TRACKING_URI=http://localhost:5000
+export POSTGRES_PASSWORD="$(kubectl -n forglemmigej get secret forglemmigej-db -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d)"
+cd api && uv run --group ml python -m forglemmigej_api.training.pretrain_lightgbm --register
+```
+
 ## Backups
 
 `postgres-backup` runs daily at 20:00 (Zurich time), before the node is switched off

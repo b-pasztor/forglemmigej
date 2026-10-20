@@ -41,7 +41,8 @@ CMD ["python", "-m", "forglemmigej_api.training.nightly"]
 
 # --- API runtime image (the default target) ------------------------------------
 FROM python:3.13-slim-trixie AS api
-RUN useradd --system --uid 10001 --no-create-home app
+# LightGBM (shadow challenger) uses OpenMP.
+RUN apt-get update     && apt-get install -y --no-install-recommends libgomp1     && rm -rf /var/lib/apt/lists/*     && useradd --system --uid 10001 --no-create-home app
 WORKDIR /app
 COPY --from=build /app/.venv /app/.venv
 COPY api/alembic.ini ./

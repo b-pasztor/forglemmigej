@@ -53,8 +53,9 @@ you type the missing word, which is checked automatically.
 **The memory model.** For every card the model predicts the probability of recall
 right now. A card is due when that probability would fall below 90%. The champion
 is [FSRS](https://github.com/open-spaced-repetition/fsrs4anki), the algorithm used
-by Anki. Challengers (FSRS fitted to my own reviews, then a LightGBM model with
-features FSRS does not see, such as card type and response time) run in
+by Anki. Challengers (a LightGBM model pre-trained on public Anki review logs,
+FSRS fitted to my own reviews, later a model with features FSRS does not see,
+such as card type and response time) run in
 **shadow mode**: they predict every review too, but do not schedule. So all
 models are compared on exactly the same reviews.
 
@@ -114,6 +115,7 @@ To run the production images locally: `docker compose --profile app up --build`
 - [x] Deploy to the homelab (Ansible-provisioned Debian + k3s), phone access over Tailscale
 - [x] Feature pipeline and the first challengers, evaluated on public review logs (notebooks 01 and 02)
 - [x] Model registry and shadow predictions: challengers predict every review next to the champion
+- [x] LightGBM pre-trained on public review logs, live as a shadow challenger
 - [x] MLflow tracking and the nightly training job (shadow evaluation, FSRS fitting)
 - [ ] Champion/challenger promotion gate in CI
 - [ ] Grafana dashboards: calibration, drift, learning progress

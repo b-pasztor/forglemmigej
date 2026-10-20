@@ -124,12 +124,19 @@ def run(session: Session, now: datetime, min_reviews: int) -> dict:
 
     since = now - timedelta(days=EVALUATION_DAYS)
     scores = evaluate_models(shadow_predictions(session, since))
+    kinds = dict(session.execute(select(MemoryModel.version, MemoryModel.kind)).all())
     for version, row in scores.iterrows():
-        role = "champion" if version == champion else "challenger"
-        mlflow.log_metrics(
-            {f"eval.{role}.{metric}": float(row[metric]) for metric in scores.columns}
+        # Keyed by role and kind, not version, so the charts continue when a
+        # challenger is replaced by a newer one of the same kind.
+        key = (
+            "champion"
+            if version == champion
+            else f"challenger.{kinds.get(version, version)}"
         )
-        mlflow.set_tag(f"eval.{role}.version", version)
+        mlflow.log_metrics(
+            {f"eval.{key}.{metric}": float(row[metric]) for metric in scores.columns}
+        )
+        mlflow.set_tag(f"eval.{key}.version", version)
     mlflow.log_text(scores.to_csv(), "evaluation.csv")
 
     result = {

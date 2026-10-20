@@ -11,6 +11,8 @@ from forglemmigej_api.models import (
     CardType,
     Item,
     ItemKind,
+    MemoryModel,
+    ModelRole,
     Prediction,
     Review,
 )
@@ -86,6 +88,12 @@ def test_nightly_run_logs_to_mlflow_and_skips_fitting_without_data(
     db: Session, tmp_path
 ) -> None:
     add_reviews(db, PLAN)
+    db.add(
+        MemoryModel(
+            version="fitted", kind="fsrs", role=ModelRole.CHALLENGER, parameters=[0.1]
+        )
+    )
+    db.flush()
     mlflow.set_tracking_uri(f"sqlite:///{(tmp_path / 'mlflow.db').as_posix()}")
     mlflow.set_experiment(EXPERIMENT)
     with mlflow.start_run() as active:
@@ -97,4 +105,4 @@ def test_nightly_run_logs_to_mlflow_and_skips_fitting_without_data(
     assert logged.params["champion"] == "fsrs6-default"
     assert logged.metrics["data.reviews"] >= len(PLAN)
     assert logged.metrics["eval.champion.n"] == 2
-    assert logged.tags["eval.challenger.version"] == "fitted"
+    assert logged.tags["eval.challenger.fsrs.version"] == "fitted"

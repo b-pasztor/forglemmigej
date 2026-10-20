@@ -251,9 +251,10 @@ class MemoryModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     version: Mapped[str] = mapped_column(Text, unique=True)
-    kind: Mapped[str] = mapped_column(Text)  # "fsrs" for now
+    kind: Mapped[str] = mapped_column(Text)  # "fsrs" or "lightgbm"
     role: Mapped[ModelRole] = mapped_column(_enum(ModelRole, "model_role"))
-    parameters: Mapped[list[float]] = mapped_column(JSONB)
+    # fsrs: the parameter list; lightgbm: {"features": [...], "model": "<text>"}.
+    parameters: Mapped[Any] = mapped_column(JSONB)
     # Training data: how many reviews, up to which moment (for reproducibility).
     trained_on_reviews: Mapped[int | None]
     trained_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

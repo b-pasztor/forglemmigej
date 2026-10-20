@@ -11,6 +11,7 @@ dependencies = [
     "alembic>=1.20.0",
     "fastapi>=0.143.0",
     "fsrs>=6.3.2",
+    "lightgbm>=4.7.0",
     "psycopg[binary]>=3.3.6",
     "pydantic-settings>=2.15.0",
     "sqlalchemy>=2.1.4",
@@ -30,7 +31,6 @@ dev = [
 ml = [
     "fsrs[optimizer]>=6.3.2",
     "ipykernel>=7.4.0",
-    "lightgbm>=4.7.0",
     "matplotlib>=3.11.2",
     "mlflow-skinny==3.16.1",
     "nbconvert>=7.17.2",

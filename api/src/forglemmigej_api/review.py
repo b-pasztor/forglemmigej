@@ -28,10 +28,9 @@ from forglemmigej_api.models import (
 from forglemmigej_api.scheduling import (
     active_models,
     apply_review,
-    predict_from_history,
     predict_from_state,
 )
-from forglemmigej_api.training.dataset import load_card_history
+from forglemmigej_api.training.dataset import load_card_history, load_card_info
 
 
 def start_of_day(now: datetime, timezone: str) -> datetime:
@@ -173,8 +172,9 @@ def answer_card(
     shadow: dict[str, float] = {}
     if challengers and predicted is not None:
         history = load_card_history(session, card.id, before=now)
+        info = load_card_info(session, card.id)
         for challenger in challengers:
-            value = predict_from_history(challenger, history, now)
+            value = challenger.predict(history, now, info)
             if value is not None:
                 shadow[challenger.version] = value
 
