@@ -106,3 +106,31 @@ def test_nightly_run_logs_to_mlflow_and_skips_fitting_without_data(
     assert logged.metrics["data.reviews"] >= len(PLAN)
     assert logged.metrics["eval.champion.n"] == 2
     assert logged.tags["eval.challenger.fsrs.version"] == "fitted"
+
+
+def test_nightly_runs_the_gate_and_keeps_a_young_fitted_challenger(
+    db: Session, tmp_path
+) -> None:
+    add_reviews(db, PLAN)
+    db.add(
+        MemoryModel(
+            version="fsrs-fitted-young",
+            kind="fsrs",
+            role=ModelRole.CHALLENGER,
+            parameters=[0.1],
+            created_at=NOW - timedelta(days=3),
+        )
+    )
+    db.flush()
+    mlflow.set_tracking_uri(f"sqlite:///{(tmp_path / 'mlflow.db').as_posix()}")
+    mlflow.set_experiment(EXPERIMENT)
+    with mlflow.start_run() as active:
+        result = run(db, NOW, min_reviews=0)
+    logged = mlflow.get_run(active.info.run_id).data
+
+    # Too few shared reviews: the champion stays, nothing is refitted yet.
+    assert result["gate"] == {"fsrs-fitted-young": False}
+    assert result["promoted"] is None
+    assert result["fitted"] is None
+    assert logged.tags["gate.fsrs.decision"].startswith("keep:")
+    assert logged.tags["fit"].startswith("skipped: the fitted challenger")

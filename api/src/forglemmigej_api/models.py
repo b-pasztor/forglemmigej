@@ -262,3 +262,22 @@ class MemoryModel(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class ModelPromotion(Base):
+    """A change of champion: the gate's decision (with the evidence it was based
+    on) or a manual rollback. The history behind every scheduling change."""
+
+    __tablename__ = "model_promotions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    promoted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    version: Mapped[str] = mapped_column(Text)  # the new champion
+    previous_version: Mapped[str] = mapped_column(Text)
+    reason: Mapped[str] = mapped_column(Text)  # "gate" or "manual: <why>"
+    # The gate's comparison on the shared reviews; empty for manual changes.
+    evaluation: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}")
+    # Cards whose cached state was rebuilt with the new champion.
+    cards_rebuilt: Mapped[int]

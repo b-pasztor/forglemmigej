@@ -24,14 +24,19 @@ from forglemmigej_api.models import Grade, MemoryModel, ModelRole, Prediction, R
 from forglemmigej_api.training.evaluate import score
 from forglemmigej_api.training.fit_fsrs import (
     DEFAULT_MIN_REVIEWS,
+    FITTED_PREFIX,
     fit_parameters,
     histories_from_database,
     register_challenger,
 )
+from forglemmigej_api.training.gate import run_gate
 
 EXPERIMENT = "forglemmigej-memory-model"
 EVALUATION_DAYS = 14
 MIN_GAP_DAYS = 1.0
+# A fitted challenger is kept this long, so it can collect enough shadow
+# predictions for the gate; then it is replaced by a fit on the newer data.
+REFIT_DAYS = 14
 
 
 def shadow_predictions(session: Session, since: datetime) -> pd.DataFrame:
@@ -42,10 +47,13 @@ def shadow_predictions(session: Session, since: datetime) -> pd.DataFrame:
         .over(partition_by=Review.card_id, order_by=(Review.reviewed_at, Review.id))
         .label("previous_at")
     )
-    reviews = select(Review.id, Review.reviewed_at, Review.grade, previous).subquery()
+    reviews = select(
+        Review.id, Review.card_id, Review.reviewed_at, Review.grade, previous
+    ).subquery()
     rows = session.execute(
         select(
             reviews.c.id,
+            reviews.c.card_id,
             reviews.c.reviewed_at,
             reviews.c.previous_at,
             reviews.c.grade,
@@ -59,7 +67,7 @@ def shadow_predictions(session: Session, since: datetime) -> pd.DataFrame:
     frame = pd.DataFrame(
         rows,
         columns=[
-            "review_id", "reviewed_at", "previous_at", "grade",
+            "review_id", "card_id", "reviewed_at", "previous_at", "grade",
             "model_version", "predicted_recall", "is_champion",
         ],
     )  # fmt: skip
@@ -139,11 +147,47 @@ def run(session: Session, now: datetime, min_reviews: int) -> dict:
         mlflow.set_tag(f"eval.{key}.version", version)
     mlflow.log_text(scores.to_csv(), "evaluation.csv")
 
+    # The gate: all shadow predictions since each challenger was registered.
+    decisions, promotion = run_gate(
+        session, shadow_predictions(session, datetime(1970, 1, 1, tzinfo=UTC))
+    )
+    for decision in decisions:
+        key = f"gate.{decision.kind}"
+        mlflow.log_metrics(
+            {
+                f"{key}.n": decision.n,
+                f"{key}.p_better": decision.p_better,
+                f"{key}.log_loss_delta": decision.champion_log_loss
+                - decision.challenger_log_loss,
+            }
+        )
+        mlflow.set_tag(
+            f"{key}.decision",
+            "promote" if decision.promote else "keep: " + "; ".join(decision.reasons),
+        )
+    mlflow.log_dict([d.as_dict() for d in decisions], "gate.json")
+    if promotion is not None:
+        mlflow.set_tag(
+            "promoted", f"{promotion.previous_version} -> {promotion.version}"
+        )
+
     result = {
         "summary": summary,
         "evaluated_models": list(scores.index),
+        "gate": {d.challenger: d.promote for d in decisions},
+        "promoted": promotion.version if promotion else None,
         "fitted": None,
     }
+    current = session.scalars(
+        select(MemoryModel.created_at).where(
+            MemoryModel.role == ModelRole.CHALLENGER,
+            MemoryModel.version.startswith(FITTED_PREFIX),
+        )
+    ).first()
+    if current is not None and now - current < timedelta(days=REFIT_DAYS):
+        mlflow.set_tag("fit", "skipped: the fitted challenger is still being judged")
+        return result
+
     histories = histories_from_database(session, until=now)
     n_reviews = sum(len(h) for h in histories.values())
     if n_reviews < min_reviews:

@@ -117,7 +117,7 @@ To run the production images locally: `docker compose --profile app up --build`
 - [x] Model registry and shadow predictions: challengers predict every review next to the champion
 - [x] LightGBM pre-trained on public review logs, live as a shadow challenger
 - [x] MLflow tracking and the nightly training job (shadow evaluation, FSRS fitting)
-- [ ] Champion/challenger promotion gate in CI
+- [x] Champion/challenger promotion gate (nightly, next to the data; log loss with a bootstrap test plus calibration; automatic promotion and rollback)
 - [ ] Grafana dashboards: calibration, drift, learning progress
 - [ ] Public showcase on GitHub Pages: a published model report, then a try-it demo running fully in the browser
 - [ ] Audio (Danish TTS), pronunciation practice (Whisper), an LLM helper for grammar questions

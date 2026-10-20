@@ -91,6 +91,17 @@ kubectl -n forglemmigej create job --from=cronjob/nightly-training train-now
 kubectl -n forglemmigej port-forward svc/mlflow 5000:5000      # then http://localhost:5000
 ```
 
+### The gate, and rolling back
+
+The nightly job also runs the champion/challenger gate (`api/src/forglemmigej_api/training/gate.py`);
+its decision is in MLflow (`gate.*` tags, `gate.json`) and promotions are in the
+`model_promotions` table. To see the gate's view now, or to roll back:
+
+```bash
+deploy/gate.sh report                                   # the gate's view, changes nothing
+deploy/gate.sh promote fsrs6-default "rollback: why"    # manual promotion / rollback
+```
+
 ### Registering the pre-trained LightGBM challenger
 
 The LightGBM challenger is trained on the laptop (the public review logs are not
