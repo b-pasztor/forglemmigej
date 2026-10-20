@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 mlflow = pytest.importorskip("mlflow")  # the ml dependency group
+pd = pytest.importorskip("pandas")
 
 from forglemmigej_api.models import (
     AnswerMode,
@@ -134,3 +135,17 @@ def test_nightly_runs_the_gate_and_keeps_a_young_fitted_challenger(
     assert result["fitted"] is None
     assert logged.tags["gate.fsrs.decision"].startswith("keep:")
     assert logged.tags["fit"].startswith("skipped: the fitted challenger")
+
+
+def test_models_outside_the_active_set_do_not_shrink_the_comparison(
+    db: Session,
+) -> None:
+    add_reviews(db, PLAN)
+    frame = shadow_predictions(db, NOW - timedelta(days=14))
+    counted = frame[frame["gap_days"] >= 1].iloc[[0]]
+    retired = counted.assign(model_version="retired-model")
+    frame = pd.concat([frame, retired])
+    # Unfiltered, only the review the retired model also predicted is left.
+    assert evaluate_models(frame).loc["fsrs6-default", "n"] == 1
+    scores = evaluate_models(frame, ["fsrs6-default", "fitted"])
+    assert scores.loc["fsrs6-default", "n"] == 2

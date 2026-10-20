@@ -78,10 +78,15 @@ def shadow_predictions(session: Session, since: datetime) -> pd.DataFrame:
     return frame
 
 
-def evaluate_models(predictions: pd.DataFrame) -> pd.DataFrame:
+def evaluate_models(
+    predictions: pd.DataFrame, versions: Sequence[str] | None = None
+) -> pd.DataFrame:
     """Scores per model, on the reviews that every model predicted (so the
-    comparison is on exactly the same reviews)."""
+    comparison is on exactly the same reviews). With `versions`, only those
+    models count (e.g. the active ones, not models retired in the window)."""
     eligible = predictions[predictions["gap_days"] >= MIN_GAP_DAYS]
+    if versions is not None:
+        eligible = eligible[eligible["model_version"].isin(versions)]
     if eligible.empty:
         return pd.DataFrame(columns=["log_loss", "brier", "auc", "rmse_bins", "n"])
     n_models = eligible["model_version"].nunique()
@@ -131,7 +136,12 @@ def run(session: Session, now: datetime, min_reviews: int) -> dict:
     mlflow.log_metrics({f"data.{k}": float(v) for k, v in summary.items()})
 
     since = now - timedelta(days=EVALUATION_DAYS)
-    scores = evaluate_models(shadow_predictions(session, since))
+    active = session.scalars(
+        select(MemoryModel.version).where(
+            MemoryModel.role.in_([ModelRole.CHAMPION, ModelRole.CHALLENGER])
+        )
+    ).all()
+    scores = evaluate_models(shadow_predictions(session, since), active)
     kinds = dict(session.execute(select(MemoryModel.version, MemoryModel.kind)).all())
     for version, row in scores.iterrows():
         # Keyed by role and kind, not version, so the charts continue when a
