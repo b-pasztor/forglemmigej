@@ -24,7 +24,8 @@ spec:
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
-      backoffLimit: 2
+      backoffLimit: 4
+      activeDeadlineSeconds: 1800
       template:
         spec:
           enableServiceLinks: false
@@ -43,6 +44,15 @@ spec:
                 - -c
                 - |
                   set -eu
+                  # A run missed while the node was off starts right after boot,
+                  # often before PostgreSQL accepts connections: wait up to 5 minutes.
+                  tries=0
+                  until pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t 2 >/dev/null; do
+                    tries=$((tries + 1))
+                    if [ "$tries" -ge 60 ]; then echo "postgres not ready after 5 minutes" >&2; exit 1; fi
+                    sleep 5
+                  done
+                  rm -f /backups/*.part # left by interrupted runs (runs never overlap)
                   file="/backups/forglemmigej-$(date +%Y%m%d-%H%M%S).dump"
                   PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc -f "$file.part"
                   mv "$file.part" "$file"
