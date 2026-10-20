@@ -50,6 +50,12 @@ spec:
               value: postgres
           ports:
             - containerPort: 8000
+          lifecycle:
+            # During a rollout, traffic can still reach a pod that is shutting
+            # down until the endpoint update has propagated; keep serving briefly.
+            preStop:
+              sleep:
+                seconds: 5
           readinessProbe:
             httpGet: { path: /api/health, port: 8000 }
             periodSeconds: 10

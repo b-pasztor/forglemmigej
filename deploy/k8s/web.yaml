@@ -31,6 +31,10 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
+          lifecycle:
+            preStop: # see api.yaml
+              sleep:
+                seconds: 5
           readinessProbe:
             httpGet: { path: /, port: 8080 }
             periodSeconds: 10
