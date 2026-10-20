@@ -34,7 +34,8 @@ RUN apt-get update \
     && useradd --system --uid 10001 --create-home app
 WORKDIR /app
 COPY --from=build-trainer /app/.venv /app/.venv
-ENV PATH=/app/.venv/bin:$PATH PYTHONUNBUFFERED=1 MLFLOW_DISABLE_AGENT_HINT=1 HOME=/home/app
+# No git in the image; MLflow would warn on every run while looking for it.
+ENV PATH=/app/.venv/bin:$PATH PYTHONUNBUFFERED=1 MLFLOW_DISABLE_AGENT_HINT=1 HOME=/home/app GIT_PYTHON_REFRESH=quiet
 USER 10001
 CMD ["python", "-m", "forglemmigej_api.training.nightly"]
 
