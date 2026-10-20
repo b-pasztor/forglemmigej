@@ -19,17 +19,19 @@ echo "==> deploying $tag to $node"
 
 docker build -f api/Dockerfile -t "forglemmigej-api:$tag" .
 docker build -t "forglemmigej-web:$tag" web
+docker build -f api/Dockerfile --target trainer -t "forglemmigej-trainer:$tag" .
 
-for image in forglemmigej-api forglemmigej-web; do
+for image in forglemmigej-api forglemmigej-web forglemmigej-trainer; do
   echo "==> loading $image:$tag into k3s on $node"
   docker save "$image:$tag" | ssh "$node" sudo k3s ctr images import -
 done
 
 kubectl kustomize deploy/k8s \
-  | sed -E "s/(forglemmigej-(api|web)):latest/\1:$tag/" \
+  | sed -E "s/(forglemmigej-(api|web|trainer)):latest/\1:$tag/" \
   | kubectl apply -f -
 kubectl -n forglemmigej rollout status deployment/api --timeout=180s
 kubectl -n forglemmigej rollout status deployment/web --timeout=120s
+kubectl -n forglemmigej rollout status deployment/mlflow --timeout=180s
 
 # Smoke test the content, not just the status code: "/" must be the app and the
 # API must answer through nginx. A few retries cover the end of the rollout.

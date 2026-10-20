@@ -8,6 +8,8 @@ resources:
   - web.yaml
   - ingress.yaml
   - backup.yaml
+  - mlflow.yaml
+  - training.yaml
 labels:
   - pairs:
       app.kubernetes.io/part-of: forglemmigej
@@ -16,4 +18,6 @@ images:
   - name: forglemmigej-api
     newTag: latest
   - name: forglemmigej-web
+    newTag: latest
+  - name: forglemmigej-trainer
     newTag: latest

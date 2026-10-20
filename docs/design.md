@@ -102,8 +102,8 @@ Order: the core loop first; the model report comes with the retraining work; the
 - **Backend:** Python + FastAPI, packages managed with `uv`; SQLAlchemy 2 + Alembic.
 - **Data:** PostgreSQL (items, cards, review log, predictions).
 - **ML:** pandas, scikit-learn, LightGBM, the `fsrs` package; Jupyter notebooks for exploration.
-- **Experiment tracking and model registry:** MLflow.
-- **Orchestration:** Kubernetes CronJobs for scheduled retraining (Prefect or Dagster if it grows).
+- **Experiment tracking:** MLflow (SQLite backend on a volume; one writer is enough). The model registry is the `memory_models` table, since the scheduler reads it on every answer.
+- **Orchestration:** Kubernetes CronJobs: `nightly-training` at 19:30, the backup at 20:00 (Prefect or Dagster if it grows).
 - **Monitoring:** Prometheus + Grafana; drift reports with Evidently.
 - **Infrastructure:** Debian 13 + Ansible, single-node k3s; Docker Compose for local development only.
 - **CI/CD:** GitHub Actions (public repository); self-hosted runners must never run pull requests from forks.

@@ -1,0 +1,59 @@
+# Nightly training: evaluates every model on recent reviews (shadow predictions),
+# fits a new FSRS challenger once there is enough data, and logs the run to MLflow.
+# 19:30, before the 20:00 backup and the evening shutdown; a run missed while the
+# node was off starts at the next boot.
+# Run it now: kubectl -n forglemmigej create job --from=cronjob/nightly-training train-now
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly-training
+spec:
+  schedule: "30 19 * * *"
+  timeZone: Europe/Zurich
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          enableServiceLinks: false # see api.yaml
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+          initContainers:
+            # Right after boot, PostgreSQL and MLflow may still be starting.
+            - name: wait-for-dependencies
+              image: forglemmigej-trainer
+              imagePullPolicy: IfNotPresent
+              command:
+                - python
+                - -c
+                - |
+                  import socket, time
+                  for host, port in [("postgres", 5432), ("mlflow", 5000)]:
+                      for _ in range(60):
+                          try:
+                              socket.create_connection((host, port), timeout=2).close()
+                              break
+                          except OSError:
+                              time.sleep(5)
+                      else:
+                          raise SystemExit(f"{host}:{port} not reachable after 5 minutes")
+          containers:
+            - name: train
+              image: forglemmigej-trainer
+              imagePullPolicy: IfNotPresent
+              envFrom:
+                - secretRef:
+                    name: forglemmigej-db
+              env:
+                - name: POSTGRES_HOST
+                  value: postgres
+                - name: MLFLOW_TRACKING_URI
+                  value: http://mlflow:5000
+              resources:
+                requests: { cpu: 500m, memory: 512Mi }
+                limits: { memory: 4Gi }

@@ -79,6 +79,18 @@ The app is then served on `https://<node>.<tailnet>.ts.net/` to devices on your 
 (Tailscale terminates HTTPS and forwards to Traefik on port 80).
 Schema migrations run automatically (init container) before each new API version starts.
 
+## MLflow and nightly training
+
+`nightly-training` runs at 19:30 (before the backup and the evening shutdown). It
+records a data summary and every model's score on recent reviews in MLflow, and
+fits a new FSRS challenger once there are enough reviews. Run it now, or open the
+MLflow UI from the laptop:
+
+```bash
+kubectl -n forglemmigej create job --from=cronjob/nightly-training train-now
+kubectl -n forglemmigej port-forward svc/mlflow 5000:5000      # then http://localhost:5000
+```
+
 ## Backups
 
 `postgres-backup` runs daily at 20:00 (Zurich time), before the node is switched off

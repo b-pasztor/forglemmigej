@@ -32,10 +32,12 @@ ml = [
     "ipykernel>=7.4.0",
     "lightgbm>=4.7.0",
     "matplotlib>=3.11.2",
+    "mlflow-skinny==3.16.1",
     "nbconvert>=7.17.2",
     "pandas>=3.0.6",
     "pyarrow>=26.0.0",
     "scikit-learn>=1.9.1",
+    "torch>=2.14.1",
 ]
 
 # PyTorch (needed by the FSRS optimizer) from the CPU-only index: there is no
