@@ -21,7 +21,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from forglemmigej_api.models import Grade, MemoryModel, ModelRole, Prediction, Review
-from forglemmigej_api.training.evaluate import score
+from forglemmigej_api.training.evaluate import MIN_GAP_DAYS, score
 from forglemmigej_api.training.fit_fsrs import (
     DEFAULT_MIN_REVIEWS,
     FITTED_PREFIX,
@@ -33,7 +33,6 @@ from forglemmigej_api.training.gate import run_gate
 
 EXPERIMENT = "forglemmigej-memory-model"
 EVALUATION_DAYS = 14
-MIN_GAP_DAYS = 1.0
 # A fitted challenger is kept this long, so it can collect enough shadow
 # predictions for the gate; then it is replaced by a fit on the newer data.
 REFIT_DAYS = 14

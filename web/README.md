@@ -1,54 +1,18 @@
-# sv
+# forglemmigej web
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+The review app: a SvelteKit single-page app (Svelte 5, TypeScript, `adapter-static`,
+SSR off). The build is static files, served by nginx in the container, which also
+proxies `/api` to the API.
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project
-npx sv create my-app
+```bash
+npm install
+npm run dev     # http://localhost:5173, /api proxied to the API on :8000
+npm run check   # svelte-check (types)
+npm run lint    # prettier + eslint
+npm test        # vitest
+npm run build   # static site in build/
 ```
 
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-npx sv@1.1.1 create --template minimal --types ts --add prettier eslint vitest="usages:unit" sveltekit-adapter="adapter:static" --install npm web
-```
-
-## Adding features
-
-Add features to your project with `sv add`:
-
-```sh
-npx sv add
-```
-
-For example, to add Tailwind CSS:
-
-```sh
-npx sv add tailwindcss
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
+- `src/routes/+page.svelte`: the review screen (recognition cards self-graded, cloze cards typed)
+- `src/lib/api.ts`: the API client
+- `src/lib/highlight.ts`: highlights the learned word in its sentence

@@ -18,7 +18,6 @@ state can be rebuilt by replaying the review log, and tests are exact.
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from functools import lru_cache
 from typing import Any
 
 import lightgbm
@@ -28,7 +27,13 @@ from fsrs import Rating, Scheduler, State
 from sqlalchemy import Text, cast, func, select
 from sqlalchemy.orm import Session
 
-from forglemmigej_api.features import CardInfo, PastReview, card_features
+from forglemmigej_api.features import (
+    CardInfo,
+    PastReview,
+    card_features,
+    fsrs_scheduler,
+    replay_fsrs,
+)
 from forglemmigej_api.models import CardStatus, Grade, MemoryModel, ModelRole
 
 _STATUS = {
@@ -45,7 +50,7 @@ class FsrsModel:
 
     @property
     def scheduler(self) -> Scheduler:
-        return _scheduler(self.parameters)
+        return fsrs_scheduler(self.parameters)
 
     def predict(
         self, history: Sequence[PastReview], at: datetime, card: CardInfo | None = None
@@ -83,11 +88,6 @@ class LightGbmModel:
 
 
 type Challenger = FsrsModel | LightGbmModel
-
-
-@lru_cache(maxsize=16)
-def _scheduler(parameters: tuple[float, ...]) -> Scheduler:
-    return Scheduler(parameters=parameters, enable_fuzzing=False)
 
 
 class NoChampionError(RuntimeError):
@@ -155,18 +155,6 @@ def predict_from_state(
     return float(model.scheduler.get_card_retrievability(card, at))
 
 
-@lru_cache(maxsize=100_000)
-def _replay(
-    parameters: tuple[float, ...], reviews: tuple[tuple[datetime, int], ...]
-) -> FsrsCard:
-    """FSRS state after replaying `reviews` with the given parameters. Cached per
-    prefix, so a growing history costs one step per new review."""
-    card = _replay(parameters, reviews[:-1]) if len(reviews) > 1 else FsrsCard()
-    reviewed_at, grade = reviews[-1]
-    card, _ = _scheduler(parameters).review_card(card, Rating(grade), reviewed_at)
-    return card
-
-
 def predict_from_history(
     model: FsrsModel, history: Sequence[PastReview], at: datetime
 ) -> float | None:
@@ -177,7 +165,7 @@ def predict_from_history(
     )
     if not past:
         return None
-    card = _replay(model.parameters, past)
+    card = replay_fsrs(model.parameters, past)
     return float(model.scheduler.get_card_retrievability(card, at.astimezone(UTC)))
 
 

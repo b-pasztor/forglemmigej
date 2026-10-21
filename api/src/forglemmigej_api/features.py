@@ -72,23 +72,42 @@ class FutureLeakError(ValueError):
     """A history entry is not strictly before the prediction time."""
 
 
-# Default FSRS parameters, no fuzzing: the same model as the champion.
-_fsrs = Scheduler(enable_fuzzing=False)
+# FSRS-6 default parameters (fsrs 6.3.2), pinned: models are trained on the
+# `fsrs_recall` feature, so a library upgrade must not change it silently. The
+# same values as the `fsrs6-default` champion seeded by the registry migration.
+FSRS6_DEFAULT_PARAMETERS = (
+    0.212, 1.2931, 2.3065, 8.2956, 6.4133, 0.8334, 3.0194, 0.001, 1.8722, 0.1666, 0.796,
+    1.4835, 0.0614, 0.2629, 1.6483, 0.6014, 1.8729, 0.5425, 0.0912, 0.0658, 0.1542,
+)  # fmt: skip
+
+
+@lru_cache(maxsize=16)
+def fsrs_scheduler(parameters: tuple[float, ...]) -> Scheduler:
+    """FSRS with the given parameters; fuzzing off, so replays are exact."""
+    return Scheduler(parameters=parameters, enable_fuzzing=False)
 
 
 @lru_cache(maxsize=200_000)
-def _fsrs_state(reviews: tuple[tuple[datetime, int], ...]) -> FsrsCard:
-    """FSRS card state after replaying `reviews`. Cached per prefix, so a history
-    that grows by one review costs one FSRS step instead of a full replay."""
-    card = _fsrs_state(reviews[:-1]) if len(reviews) > 1 else FsrsCard()
+def replay_fsrs(
+    parameters: tuple[float, ...], reviews: tuple[tuple[datetime, int], ...]
+) -> FsrsCard:
+    """FSRS card state after replaying `reviews` (UTC times, oldest first). Cached
+    per prefix, so a history that grows by one review costs one FSRS step."""
+    card = replay_fsrs(parameters, reviews[:-1]) if len(reviews) > 1 else FsrsCard()
     reviewed_at, grade = reviews[-1]
-    card, _ = _fsrs.review_card(copy(card), Rating(grade), reviewed_at)
+    card, _ = fsrs_scheduler(parameters).review_card(
+        copy(card), Rating(grade), reviewed_at
+    )
     return card
 
 
 def _fsrs_recall(history: Sequence[PastReview], at: datetime) -> float:
-    state = _fsrs_state(tuple((r.reviewed_at, r.grade) for r in history))
-    return float(_fsrs.get_card_retrievability(state, at))
+    state = replay_fsrs(
+        FSRS6_DEFAULT_PARAMETERS, tuple((r.reviewed_at, r.grade) for r in history)
+    )
+    return float(
+        fsrs_scheduler(FSRS6_DEFAULT_PARAMETERS).get_card_retrievability(state, at)
+    )
 
 
 def _days(later: datetime, earlier: datetime) -> float:

@@ -127,3 +127,23 @@ def test_training_and_serving_paths_produce_identical_features(db: Session) -> N
             info,
         )
         assert serving == example.features
+
+
+def test_fsrs_feature_parameters_are_pinned() -> None:
+    """The fsrs_recall feature uses pinned parameters, equal to the champion the
+    registry migration seeds. If an fsrs upgrade changes its defaults, this fails:
+    a deliberate decision is needed, since models were trained on this feature."""
+    import importlib.util
+
+    from fsrs import Scheduler
+
+    from forglemmigej_api.features import FSRS6_DEFAULT_PARAMETERS
+
+    from .conftest import API_ROOT
+
+    path = next(API_ROOT.glob("migrations/versions/*_memory_model_registry.py"))
+    spec = importlib.util.spec_from_file_location("registry_migration", path)
+    migration = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(migration)
+    assert list(FSRS6_DEFAULT_PARAMETERS) == migration.FSRS6_DEFAULT_PARAMETERS
+    assert tuple(Scheduler().parameters) == pytest.approx(FSRS6_DEFAULT_PARAMETERS)

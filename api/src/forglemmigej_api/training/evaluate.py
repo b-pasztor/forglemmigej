@@ -16,6 +16,9 @@ import pandas as pd
 from sklearn.metrics import brier_score_loss, log_loss, roc_auc_score
 
 EPSILON = 1e-6
+# Only reviews at least this long after the card's previous review are used to
+# judge models: minutes after learning every model predicts ~100%.
+MIN_GAP_DAYS = 1.0
 
 
 @dataclass(frozen=True)

@@ -46,13 +46,12 @@ from forglemmigej_api.models import (
     Review,
 )
 from forglemmigej_api.scheduling import FsrsModel, apply_review
-from forglemmigej_api.training.evaluate import EPSILON, score
+from forglemmigej_api.training.evaluate import EPSILON, MIN_GAP_DAYS, score
 
 MIN_REVIEWS = 300
 CONFIDENCE = 0.95
 CALIBRATION_TOLERANCE = 0.01
 BOOTSTRAP_SAMPLES = 2000
-MIN_GAP_DAYS = 1.0
 SCHEDULING_KINDS = {"fsrs"}
 
 
