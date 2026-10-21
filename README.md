@@ -130,5 +130,12 @@ To run the production images locally: `docker compose --profile app up --build`
 - Word frequencies: [FrequencyWords](https://github.com/hermitdave/FrequencyWords) by Hermit Dave, built from [OpenSubtitles 2018](http://opus.nlpl.eu/OpenSubtitles2018.php), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 - Meanings, gender, pronunciation and phrases: [Wiktionary](https://en.wiktionary.org/), via the [kaikki.org](https://kaikki.org/) extraction ([Wiktextract](https://github.com/tatuylonen/wiktextract)), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 - Example sentences and translations: [Tatoeba](https://tatoeba.org/), [CC BY 2.0 FR](https://creativecommons.org/licenses/by/2.0/fr/).
+- Public review logs for pre-training: [open-spaced-repetition/fsrs-dataset](https://huggingface.co/datasets/open-spaced-repetition/fsrs-dataset), MIT.
 
 The downloaded data is not part of this repository.
+
+## License
+
+The code is [MIT](LICENSE). The curation files in `data/curation/` correct and
+annotate the Wiktionary data and are shared under
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), like their source.
