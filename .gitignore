@@ -1,4 +1,4 @@
-# Secrets and personal notes
+# Secrets
 .env
 deploy/ansible/inventory.ini
 deploy/ansible/kubeconfig

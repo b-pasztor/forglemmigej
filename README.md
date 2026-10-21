@@ -66,7 +66,7 @@ models are compared on exactly the same reviews.
 - Train/test splits are chronological, never random.
 - Training and serving share one feature function.
 
-The full reasoning is in [docs/design.md](docs/design.md).
+The full reasoning is in [docs/design.md](docs/design.md); how the code is organised is in [docs/development.md](docs/development.md).
 
 ## Stack
 
