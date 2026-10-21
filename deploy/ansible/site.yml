@@ -151,10 +151,11 @@
       notify: Restart k3s
 
     # The kubelet delays shutdown through a systemd-logind "inhibitor lock", which
-    # logind caps at InhibitDelayMaxSec (default 30s). The kubelet writes its own
-    # logind override at start, but logind (systemd 257) does not pick it up on
-    # reload, and the kubelet then silently skips graceful shutdown. Setting it
-    # here makes it effective from boot.
+    # logind caps at InhibitDelayMaxSec. Drop-ins are applied in file-name order
+    # across /etc and /usr/lib, and unattended-upgrades ships
+    # unattended-upgrades-logind-maxdelay.conf (30s), which sorts after the
+    # kubelet's own 99-kubelet.conf and wins; the kubelet then silently skips
+    # graceful shutdown. Our "zz-" file sorts last.
     - name: Create the systemd-logind drop-in directory
       ansible.builtin.file:
         path: /etc/systemd/logind.conf.d
@@ -163,12 +164,17 @@
 
     - name: Let the kubelet delay shutdown long enough (systemd-logind)
       ansible.builtin.copy:
-        dest: /etc/systemd/logind.conf.d/50-kubelet-graceful-shutdown.conf
+        dest: /etc/systemd/logind.conf.d/zz-kubelet-graceful-shutdown.conf
         content: |
           [Login]
           InhibitDelayMaxSec=120
         mode: "0644"
       notify: [Restart systemd-logind, Restart k3s]
+
+    - name: Remove the earlier, wrongly ordered logind drop-in
+      ansible.builtin.file:
+        path: /etc/systemd/logind.conf.d/50-kubelet-graceful-shutdown.conf
+        state: absent
 
     - name: Check whether k3s is installed
       ansible.builtin.stat:
