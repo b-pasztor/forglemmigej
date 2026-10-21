@@ -1,0 +1,53 @@
+# API, ML and training code: lint and the full test suite (with the ml group)
+# against a real PostgreSQL, as in development.
+name: api
+
+on:
+  push:
+    branches: [main]
+    paths: ["api/**", "data/curation/**", ".github/workflows/api.yml"]
+  pull_request:
+    paths: ["api/**", "data/curation/**", ".github/workflows/api.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: api
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: forglemmigej
+          POSTGRES_USER: forglemmigej
+          POSTGRES_PASSWORD: ci-only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U forglemmigej" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PASSWORD: ci-only
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: api/uv.lock
+      - name: Install (CPU-only PyTorch, from the lock file)
+        run: uv sync --locked --group ml
+      - name: Lint
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+      - name: Test
+        run: uv run pytest -q

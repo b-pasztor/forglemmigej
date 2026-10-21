@@ -1,5 +1,7 @@
 # forglemmigej 🌼
 
+[![api](https://github.com/b-pasztor/forglemmigej/actions/workflows/api.yml/badge.svg)](https://github.com/b-pasztor/forglemmigej/actions/workflows/api.yml) [![web](https://github.com/b-pasztor/forglemmigej/actions/workflows/web.yml/badge.svg)](https://github.com/b-pasztor/forglemmigej/actions/workflows/web.yml) [![deploy](https://github.com/b-pasztor/forglemmigej/actions/workflows/deploy.yml/badge.svg)](https://github.com/b-pasztor/forglemmigej/actions/workflows/deploy.yml)
+
 **A self-hosted Danish tutor whose scheduler is an ML model, with an MLOps loop around it.**
 
 *Forglemmigej* is Danish for "forget-me-not". The app shows you Danish words in real
