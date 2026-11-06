@@ -15,6 +15,7 @@ from forglemmigej_api.models import (
     CardType,
     Grade,
     Item,
+    ItemKind,
     Review,
     StudySession,
 )
@@ -62,6 +63,7 @@ class CardOut(BaseModel):
     is_new: bool
     word: WordOut
     context: ContextOut | None
+    hint: str | None  # first letters of a phrase, e.g. "M____ t__"
 
 
 class NextOut(BaseModel):
@@ -112,6 +114,26 @@ def mask(sentence: str, form: str) -> str:
     return re.sub(pattern, "___", sentence, count=1, flags=re.IGNORECASE)
 
 
+def first_letters(phrase: str) -> str:
+    """A phrase with only its first letters: "Mange tak" -> "M____ t__"."""
+    return " ".join(word[0] + "_" * (len(word) - 1) for word in phrase.split())
+
+
+def phrase_hint(card: Card, item: Item) -> str | None:
+    """Several phrases can fit one translation ("Thanks": tak, mange tak...). The
+    learner cannot know which is asked for, so a miss would say nothing about their
+    memory. First letters identify the phrase; single words have a sentence for that."""
+    if item.kind != ItemKind.PHRASE:
+        return None
+    if card.card_type == CardType.CLOZE:
+        phrase = card.target_form or ""
+    elif card.card_type == CardType.RECALL:
+        phrase = item.danish
+    else:
+        return None
+    return first_letters(phrase) if " " in phrase.strip() else None
+
+
 def card_out(session: Session, card: Card) -> CardOut:
     item = session.get(Item, card.item_id)
     details = item.details or {}
@@ -130,6 +152,7 @@ def card_out(session: Session, card: Card) -> CardOut:
         card_id=card.id,
         card_type=card.card_type,
         is_new=card.status == CardStatus.NEW,
+        hint=phrase_hint(card, item),
         word=WordOut(
             danish=item.danish,
             article=item.article,

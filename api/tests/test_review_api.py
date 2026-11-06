@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from forglemmigej_api.app import app, mask, utcnow
+from forglemmigej_api.app import app, card_out, first_letters, mask, utcnow
 from forglemmigej_api.config import get_settings
 from forglemmigej_api.db import get_session
 from forglemmigej_api.models import (
@@ -286,3 +286,43 @@ def test_new_words_and_second_cards_take_turns(
     # The counters move as the cards are introduced.
     body = client.get("/api/next").json()
     assert (body["practice_waiting"], body["new_remaining"]) == (0, 1)
+
+
+def test_first_letters_identify_a_phrase() -> None:
+    assert first_letters("Mange tak") == "M____ t__"
+    assert first_letters("Det var så lidt") == "D__ v__ s_ l___"
+
+
+def test_phrases_get_a_hint_but_single_words_do_not(
+    client: TestClient, db: Session, clock: Clock
+) -> None:
+    ids = add_word(db, "hus", 1, ("Huset er stort.", "The house is big.", "Huset"))
+    phrase = Item(
+        kind=ItemKind.PHRASE,
+        danish="mange tak",
+        english="thank you very much",
+        source="test",
+        source_ref="mange tak|test",
+    )
+    sentence = Item(
+        kind=ItemKind.SENTENCE,
+        danish="Mange tak.",
+        english="Thanks a lot.",
+        source="test",
+        source_ref="Mange tak.|test",
+    )
+    db.add_all([phrase, sentence])
+    db.flush()
+    cloze = Card(
+        item_id=phrase.id,
+        card_type=CardType.CLOZE,
+        context_item_id=sentence.id,
+        target_form="Mange tak",
+    )
+    db.add(cloze)
+    db.flush()
+
+    assert card_out(db, cloze).hint == "M____ t__"
+    assert card_out(db, cloze).context.danish == "___."
+    assert card_out(db, db.get(Card, ids[CardType.CLOZE])).hint is None
+    assert card_out(db, db.get(Card, ids[CardType.RECOGNITION])).hint is None

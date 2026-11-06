@@ -24,6 +24,7 @@ export interface ReviewCard {
 	is_new: boolean;
 	word: Word;
 	context: Context | null;
+	hint: string | null;
 }
 
 export interface Next {

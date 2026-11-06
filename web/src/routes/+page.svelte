@@ -133,7 +133,7 @@
 				<p class="english">{card.context.english}</p>
 				<p class="sentence">
 					{before}<span class="gap" class:filled={phase === 'feedback'}
-						>{phase === 'feedback' ? result?.expected : '___'}</span
+						>{phase === 'feedback' ? result?.expected : (card.hint ?? '___')}</span
 					>{after}
 				</p>
 				{#if phase === 'front'}
@@ -149,7 +149,7 @@
 							autocomplete="off"
 							autocapitalize="off"
 							spellcheck="false"
-							placeholder="Type the missing word"
+							placeholder={card.hint ? 'Type the missing words' : 'Type the missing word'}
 						/>
 						<div class="letters">
 							{#each ['æ', 'ø', 'å'] as letter (letter)}
@@ -168,6 +168,7 @@
 			{:else}
 				{#if isRecall}
 					<p class="prompt">{card.word.english}</p>
+					{#if card.hint && phase === 'front'}<p class="english">{card.hint}</p>{/if}
 				{:else if card.context}
 					<p class="sentence">
 						{#each highlight(card.context.danish, card.context.target_form) as segment, i (i)}
