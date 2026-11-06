@@ -67,6 +67,7 @@ class CardOut(BaseModel):
 class NextOut(BaseModel):
     card: CardOut | None
     new_remaining: int
+    practice_waiting: int
     due_now: int
     next_due_at: datetime | None
 
@@ -170,6 +171,7 @@ def get_next(db: DbSession, now: Now, settings: AppSettings) -> NextOut:
     return NextOut(
         card=card_out(db, result.card) if result.card else None,
         new_remaining=result.new_remaining,
+        practice_waiting=result.practice_waiting,
         due_now=due_soon_count(db, now, timedelta(0)),
         next_due_at=result.next_due_at,
     )

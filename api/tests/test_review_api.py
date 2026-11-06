@@ -175,6 +175,10 @@ def test_cloze_comes_after_recognition_graduates_and_is_graded_from_text(
 
     clock.advance(minutes=15)
     client.post(f"/api/cards/{ids[CardType.RECOGNITION]}/answer", json={"grade": 3})
+    # Graduated, but the answer is still fresh: the cloze waits for another day.
+    assert client.get("/api/next").json()["card"] is None
+
+    clock.advance(days=1)
     cloze = client.get("/api/next").json()["card"]
     assert cloze["card_type"] == "cloze"
     assert cloze["context"] == {
@@ -241,23 +245,44 @@ def test_second_cards_do_not_use_the_new_word_limit(
     words = [
         add_word(db, word, rank) for rank, word in enumerate(["en", "to", "tre"], 1)
     ]
-    for _ in range(3):  # the daily limit in these tests is 3 new words
-        card = client.get("/api/next").json()["card"]
-        assert card["card_type"] == "recognition"
-        client.post(f"/api/cards/{card['card_id']}/answer", json={"grade": 3})
+    for word in words:  # the daily limit in these tests is 3 new words
+        graduate_recognition(client, clock, word[CardType.RECOGNITION])
     assert client.get("/api/next").json()["new_remaining"] == 0
 
-    # Graduate the first word's recognition card; its recall card unlocks and
-    # comes even though no new words are left today.
-    clock.advance(minutes=15)
-    client.post(
-        f"/api/cards/{words[0][CardType.RECOGNITION]}/answer", json={"grade": 3}
-    )
-    clock.advance(minutes=1)
+    clock.advance(days=1)
+    for rank, word in enumerate(["fire", "fem", "seks"], 4):
+        add_word(db, word, rank)
+    seen = []
+    for _ in range(6):
+        card = client.get("/api/next").json()["card"]
+        seen.append(card["card_type"])
+        client.post(f"/api/cards/{card['card_id']}/answer", json={"grade": 3})
+    assert seen.count("recall") == 3  # all three, on top of the 3 new words
+    assert seen.count("recognition") == 3
+    assert client.get("/api/next").json()["new_remaining"] == 0
+
+
+def test_new_words_and_second_cards_take_turns(
+    client: TestClient, db: Session, clock: Clock
+) -> None:
+    """Yesterday's words have second cards waiting; today's new words must still
+    get their turn, so the learner keeps advancing through the curriculum."""
+    old = [add_word(db, word, rank) for rank, word in enumerate(["en", "to"], 1)]
+    for word in old:
+        graduate_recognition(client, clock, word[CardType.RECOGNITION])
+    clock.advance(days=1)
+    for rank, word in enumerate(["tre", "fire"], 3):
+        add_word(db, word, rank)
+
+    body = client.get("/api/next").json()
+    assert (body["practice_waiting"], body["new_remaining"]) == (2, 3)
+    seen = []
     for _ in range(4):
         card = client.get("/api/next").json()["card"]
-        if card is None or card["card_id"] == words[0][CardType.RECALL]:
-            break
+        seen.append(card["card_type"])
         client.post(f"/api/cards/{card['card_id']}/answer", json={"grade": 3})
-    assert card is not None and card["card_id"] == words[0][CardType.RECALL]
-    assert card["card_type"] == "recall"
+    assert seen == ["recognition", "recall", "recognition", "recall"]
+
+    # The counters move as the cards are introduced.
+    body = client.get("/api/next").json()
+    assert (body["practice_waiting"], body["new_remaining"]) == (0, 1)

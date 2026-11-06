@@ -29,6 +29,7 @@ export interface ReviewCard {
 export interface Next {
 	card: ReviewCard | null;
 	new_remaining: number;
+	practice_waiting: number;
 	due_now: number;
 	next_due_at: string | null;
 }

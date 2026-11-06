@@ -92,7 +92,9 @@
 	<header>
 		<span class="brand">forglemmigej</span>
 		{#if next}
-			<span class="counts">{next.due_now} due · {next.new_remaining} new left</span>
+			<span class="counts"
+				>{next.due_now} due · {next.practice_waiting} practice · {next.new_remaining} new words</span
+			>
 		{/if}
 	</header>
 
@@ -121,7 +123,8 @@
 	{:else if card}
 		<section class="card">
 			<p class="kind">
-				{#if card.is_new}<span class="badge">new</span>{/if}
+				{#if card.is_new}<span class="badge">{isCloze || isRecall ? 'practice' : 'new word'}</span
+					>{/if}
 				{isCloze ? 'Fill in the Danish word' : isRecall ? 'Say it in Danish' : 'What does it mean?'}
 			</p>
 
