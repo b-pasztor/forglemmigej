@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from forglemmigej_api.app import app, mask, utcnow
+from forglemmigej_api.app import app, card_out, first_letters, mask, utcnow
 from forglemmigej_api.config import get_settings
 from forglemmigej_api.db import get_session
 from forglemmigej_api.models import (
@@ -175,6 +175,10 @@ def test_cloze_comes_after_recognition_graduates_and_is_graded_from_text(
 
     clock.advance(minutes=15)
     client.post(f"/api/cards/{ids[CardType.RECOGNITION]}/answer", json={"grade": 3})
+    # Graduated, but the answer is still fresh: the cloze waits for another day.
+    assert client.get("/api/next").json()["card"] is None
+
+    clock.advance(days=1)
     cloze = client.get("/api/next").json()["card"]
     assert cloze["card_type"] == "cloze"
     assert cloze["context"] == {
@@ -241,23 +245,84 @@ def test_second_cards_do_not_use_the_new_word_limit(
     words = [
         add_word(db, word, rank) for rank, word in enumerate(["en", "to", "tre"], 1)
     ]
-    for _ in range(3):  # the daily limit in these tests is 3 new words
-        card = client.get("/api/next").json()["card"]
-        assert card["card_type"] == "recognition"
-        client.post(f"/api/cards/{card['card_id']}/answer", json={"grade": 3})
+    for word in words:  # the daily limit in these tests is 3 new words
+        graduate_recognition(client, clock, word[CardType.RECOGNITION])
     assert client.get("/api/next").json()["new_remaining"] == 0
 
-    # Graduate the first word's recognition card; its recall card unlocks and
-    # comes even though no new words are left today.
-    clock.advance(minutes=15)
-    client.post(
-        f"/api/cards/{words[0][CardType.RECOGNITION]}/answer", json={"grade": 3}
-    )
-    clock.advance(minutes=1)
+    clock.advance(days=1)
+    for rank, word in enumerate(["fire", "fem", "seks"], 4):
+        add_word(db, word, rank)
+    seen = []
+    for _ in range(6):
+        card = client.get("/api/next").json()["card"]
+        seen.append(card["card_type"])
+        client.post(f"/api/cards/{card['card_id']}/answer", json={"grade": 3})
+    assert seen.count("recall") == 3  # all three, on top of the 3 new words
+    assert seen.count("recognition") == 3
+    assert client.get("/api/next").json()["new_remaining"] == 0
+
+
+def test_new_words_and_second_cards_take_turns(
+    client: TestClient, db: Session, clock: Clock
+) -> None:
+    """Yesterday's words have second cards waiting; today's new words must still
+    get their turn, so the learner keeps advancing through the curriculum."""
+    old = [add_word(db, word, rank) for rank, word in enumerate(["en", "to"], 1)]
+    for word in old:
+        graduate_recognition(client, clock, word[CardType.RECOGNITION])
+    clock.advance(days=1)
+    for rank, word in enumerate(["tre", "fire"], 3):
+        add_word(db, word, rank)
+
+    body = client.get("/api/next").json()
+    assert (body["practice_waiting"], body["new_remaining"]) == (2, 3)
+    seen = []
     for _ in range(4):
         card = client.get("/api/next").json()["card"]
-        if card is None or card["card_id"] == words[0][CardType.RECALL]:
-            break
+        seen.append(card["card_type"])
         client.post(f"/api/cards/{card['card_id']}/answer", json={"grade": 3})
-    assert card is not None and card["card_id"] == words[0][CardType.RECALL]
-    assert card["card_type"] == "recall"
+    assert seen == ["recognition", "recall", "recognition", "recall"]
+
+    # The counters move as the cards are introduced.
+    body = client.get("/api/next").json()
+    assert (body["practice_waiting"], body["new_remaining"]) == (0, 1)
+
+
+def test_first_letters_identify_a_phrase() -> None:
+    assert first_letters("Mange tak") == "M____ t__"
+    assert first_letters("Det var så lidt") == "D__ v__ s_ l___"
+
+
+def test_phrases_get_a_hint_but_single_words_do_not(
+    client: TestClient, db: Session, clock: Clock
+) -> None:
+    ids = add_word(db, "hus", 1, ("Huset er stort.", "The house is big.", "Huset"))
+    phrase = Item(
+        kind=ItemKind.PHRASE,
+        danish="mange tak",
+        english="thank you very much",
+        source="test",
+        source_ref="mange tak|test",
+    )
+    sentence = Item(
+        kind=ItemKind.SENTENCE,
+        danish="Mange tak.",
+        english="Thanks a lot.",
+        source="test",
+        source_ref="Mange tak.|test",
+    )
+    db.add_all([phrase, sentence])
+    db.flush()
+    cloze = Card(
+        item_id=phrase.id,
+        card_type=CardType.CLOZE,
+        context_item_id=sentence.id,
+        target_form="Mange tak",
+    )
+    db.add(cloze)
+    db.flush()
+
+    assert card_out(db, cloze).hint == "M____ t__"
+    assert card_out(db, cloze).context.danish == "___."
+    assert card_out(db, db.get(Card, ids[CardType.CLOZE])).hint is None
+    assert card_out(db, db.get(Card, ids[CardType.RECOGNITION])).hint is None

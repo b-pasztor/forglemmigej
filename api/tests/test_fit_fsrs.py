@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 pytest.importorskip("torch")  # the FSRS optimizer comes with the ml dependency group
 
+from forglemmigej_api.features import PastReview
 from forglemmigej_api.models import (
     AnswerMode,
     Card,
@@ -18,6 +19,7 @@ from forglemmigej_api.models import (
 )
 from forglemmigej_api.scheduling import active_models
 from forglemmigej_api.training.fit_fsrs import (
+    fit_reviews,
     histories_from_database,
     register_challenger,
     review_logs,
@@ -77,3 +79,12 @@ def test_a_new_fit_retires_the_previous_fitted_challenger(db: Session) -> None:
     )
     _, challengers = active_models(db)
     assert [c.version for c in challengers] == [second.version]
+
+
+def test_only_reviews_a_day_apart_are_usable_for_fitting() -> None:
+    history = [
+        PastReview(T0 + timedelta(days=days), 3)
+        for days in (0, 0.01, 0.5, 1.6, 2.0, 5.0)
+    ]
+    # 0.01 and 0.5 are same-day; 1.6 is a day+ later; 2.0 is not; 5.0 is.
+    assert fit_reviews({1: history}) == 2

@@ -62,16 +62,31 @@ def _due_cards(now: datetime) -> Select:
     )
 
 
-def _new_cards(include_new_words: bool) -> Select:
-    """New cards in curriculum order: survival phrases first, then by frequency.
-    A word's second card (cloze or recall) only comes once its recognition card
-    has graduated to review: right after the first card the answer is still on
-    screen. With `include_new_words` false, only such second cards qualify."""
+def _curriculum_order(query: Select) -> Select:
+    """Survival phrases first, then by frequency."""
+    return query.join(Item, Item.id == Card.item_id).order_by(
+        case((func.cardinality(Item.topics) > 0, 0), else_=1),
+        Item.frequency_rank.asc().nulls_last(),
+        Card.id,
+    )
+
+
+def _new_words() -> Select:
+    return _curriculum_order(
+        select(Card).where(
+            Card.status == CardStatus.NEW, Card.card_type == CardType.RECOGNITION
+        )
+    )
+
+
+def _second_cards(today: datetime) -> Select:
+    """A word's second card (cloze or recall) waits until its recognition card has
+    graduated and was introduced on an earlier day: on the same day the answer is
+    still fresh, so typing it would prove nothing."""
     recognition = aliased(Card)
-    query = (
+    return _curriculum_order(
         select(Card)
-        .join(Item, Item.id == Card.item_id)
-        .outerjoin(
+        .join(
             recognition,
             and_(
                 recognition.item_id == Card.item_id,
@@ -80,35 +95,50 @@ def _new_cards(include_new_words: bool) -> Select:
         )
         .where(
             Card.status == CardStatus.NEW,
-            (Card.card_type == CardType.RECOGNITION)
-            | (recognition.status == CardStatus.REVIEW),
-        )
-        .order_by(
-            case((func.cardinality(Item.topics) > 0, 0), else_=1),
-            Item.frequency_rank.asc().nulls_last(),
-            case((Card.card_type == CardType.RECOGNITION, 0), else_=1),
-            Card.id,
+            Card.card_type != CardType.RECOGNITION,
+            recognition.status == CardStatus.REVIEW,
+            recognition.introduced_at < today,
         )
     )
-    if not include_new_words:
-        query = query.where(Card.card_type != CardType.RECOGNITION)
-    return query
+
+
+def second_cards_today(session: Session, today: datetime) -> int:
+    return session.scalar(
+        select(func.count())
+        .select_from(Card)
+        .where(
+            Card.introduced_at >= today,
+            Card.card_type != CardType.RECOGNITION,
+        )
+    )
 
 
 @dataclass
 class NextCard:
     card: Card | None
     new_remaining: int
+    practice_waiting: int  # second cards that are ready to be introduced
     next_due_at: datetime | None  # when the next learning card becomes due
 
 
 def next_card(
     session: Session, now: datetime, timezone: str, new_per_day: int
 ) -> NextCard:
-    new_remaining = max(0, new_per_day - new_words_today(session, now, timezone))
+    today = start_of_day(now, timezone)
+    words_today = new_words_today(session, now, timezone)
+    new_remaining = max(0, new_per_day - words_today)
+    second_cards = _second_cards(today)
+    practice_waiting = session.scalar(
+        select(func.count()).select_from(second_cards.order_by(None).subquery())
+    )
     card = session.scalars(_due_cards(now).limit(1)).first()
     if card is None:
-        card = session.scalars(_new_cards(new_remaining > 0).limit(1)).first()
+        # New words and second cards take turns, so neither blocks the other: a
+        # backlog of second cards must not stop the learner from advancing.
+        word = session.scalars(_new_words().limit(1)).first() if new_remaining else None
+        second = session.scalars(second_cards.limit(1)).first()
+        second_turn = second_cards_today(session, today) < words_today
+        card = (second or word) if second_turn or word is None else word
     next_due_at = None
     if card is None:
         next_due_at = session.scalar(
@@ -116,7 +146,7 @@ def next_card(
                 Card.status.in_([CardStatus.LEARNING, CardStatus.REVIEW])
             )
         )
-    return NextCard(card, new_remaining, next_due_at)
+    return NextCard(card, new_remaining, practice_waiting, next_due_at)
 
 
 def normalize_answer(text: str) -> str:

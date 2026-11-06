@@ -12,6 +12,7 @@ Usage (from api/):
 import argparse
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
+from itertools import pairwise
 
 from fsrs import Optimizer, Rating, ReviewLog
 from sqlalchemy import select, update
@@ -21,9 +22,9 @@ from forglemmigej_api.features import PastReview
 from forglemmigej_api.models import MemoryModel, ModelRole, Review
 
 FITTED_PREFIX = "fsrs-fitted-"
-# Below this the optimizer has too little to learn from and mostly returns
-# the defaults; the FSRS authors suggest about a thousand reviews.
-DEFAULT_MIN_REVIEWS = 1000
+# The optimizer learns only from reviews at least a day after the card's previous
+# one; with fewer than 512 of those it silently returns the default parameters.
+DEFAULT_MIN_REVIEWS = 512
 
 
 def review_logs(histories: Mapping[int, Sequence[PastReview]]) -> list[ReviewLog]:
@@ -34,6 +35,15 @@ def review_logs(histories: Mapping[int, Sequence[PastReview]]) -> list[ReviewLog
         for card_id, reviews in histories.items()
         for r in reviews
     ]
+
+
+def fit_reviews(histories: Mapping[int, Sequence[PastReview]]) -> int:
+    """How many reviews the optimizer can learn from (counted as it counts them)."""
+    return sum(
+        (later.reviewed_at - earlier.reviewed_at).days > 0
+        for reviews in histories.values()
+        for earlier, later in pairwise(reviews)
+    )
 
 
 def fit_parameters(histories: Mapping[int, Sequence[PastReview]]) -> list[float]:
@@ -98,12 +108,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     with SessionLocal().begin() as session:
         histories = histories_from_database(session, until)
         n_reviews = sum(len(h) for h in histories.values())
+        usable = fit_reviews(histories)
         print(
-            f"{n_reviews} reviews of {len(histories)} cards before {until:%Y-%m-%d %H:%M} UTC"
+            f"{n_reviews} reviews of {len(histories)} cards before "
+            f"{until:%Y-%m-%d %H:%M} UTC, {usable} usable (a day+ apart)"
         )
-        if n_reviews < args.min_reviews:
+        if usable < args.min_reviews:
             print(
-                f"not enough reviews to fit (minimum {args.min_reviews}); nothing registered"
+                f"not enough usable reviews (minimum {args.min_reviews}); nothing registered"
             )
             return 0
         parameters = fit_parameters(histories)

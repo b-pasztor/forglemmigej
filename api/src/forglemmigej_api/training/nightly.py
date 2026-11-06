@@ -26,6 +26,7 @@ from forglemmigej_api.training.fit_fsrs import (
     DEFAULT_MIN_REVIEWS,
     FITTED_PREFIX,
     fit_parameters,
+    fit_reviews,
     histories_from_database,
     register_challenger,
 )
@@ -199,8 +200,10 @@ def run(session: Session, now: datetime, min_reviews: int) -> dict:
 
     histories = histories_from_database(session, until=now)
     n_reviews = sum(len(h) for h in histories.values())
-    if n_reviews < min_reviews:
-        mlflow.set_tag("fit", f"skipped: {n_reviews} reviews < {min_reviews}")
+    usable = fit_reviews(histories)
+    mlflow.log_metric("data.fit_reviews", usable)
+    if usable < min_reviews:
+        mlflow.set_tag("fit", f"skipped: {usable} usable reviews < {min_reviews}")
         return result
 
     parameters = fit_parameters(histories)
