@@ -1,0 +1,79 @@
+# Entry point for all checks. It finds out which parts changed and runs only
+# their workflows (api.yml, web.yml, deploy.yml are reusable). The final `ci`
+# job always runs and sums them up, so branch protection can require that one
+# check: a docs-only pull request passes it instead of waiting forever for
+# checks that were filtered out.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+      deploy: ${{ steps.filter.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - id: filter
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          # Diff against the merge base; if the base is unknown, check everything.
+          if git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            git diff --name-only "$BASE...$HEAD" > changed.txt
+          else
+            echo all > changed.txt
+          fi
+          cat changed.txt
+          changed() { grep -qE "^(all\$|$1)" changed.txt && echo true || echo false; }
+          {
+            echo "api=$(changed 'api/|data/curation/|\.github/workflows/(ci|api)\.yml')"
+            echo "web=$(changed 'web/|\.github/workflows/(ci|web)\.yml')"
+            echo "deploy=$(changed 'deploy/|api/|web/|data/curation/|\.github/workflows/(ci|deploy)\.yml')"
+          } | tee -a "$GITHUB_OUTPUT"
+
+  api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    uses: ./.github/workflows/api.yml
+
+  web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    uses: ./.github/workflows/web.yml
+
+  deploy:
+    needs: changes
+    if: needs.changes.outputs.deploy == 'true'
+    uses: ./.github/workflows/deploy.yml
+
+  ci:
+    needs: [changes, api, web, deploy]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: All checks that ran passed (skipped ones did not need to run)
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          for result in $RESULTS; do
+            case "$result" in success|skipped) ;; *) exit 1 ;; esac
+          done

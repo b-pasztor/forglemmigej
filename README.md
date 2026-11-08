@@ -1,6 +1,6 @@
 # forglemmigej 🌼
 
-[![api](https://github.com/b-pasztor/forglemmigej/actions/workflows/api.yml/badge.svg)](https://github.com/b-pasztor/forglemmigej/actions/workflows/api.yml) [![web](https://github.com/b-pasztor/forglemmigej/actions/workflows/web.yml/badge.svg)](https://github.com/b-pasztor/forglemmigej/actions/workflows/web.yml) [![deploy](https://github.com/b-pasztor/forglemmigej/actions/workflows/deploy.yml/badge.svg)](https://github.com/b-pasztor/forglemmigej/actions/workflows/deploy.yml)
+[![ci](https://github.com/b-pasztor/forglemmigej/actions/workflows/ci.yml/badge.svg)](https://github.com/b-pasztor/forglemmigej/actions/workflows/ci.yml)
 
 **A self-hosted Danish tutor whose scheduler is an ML model, with an MLOps loop around it.**
 
