@@ -13,9 +13,11 @@ on:
 permissions:
   contents: read
 
+# A new push to a pull request cancels its older run; on main every commit is
+# checked to the end, so each one keeps its own result.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   changes:
