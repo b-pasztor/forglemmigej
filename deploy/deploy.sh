@@ -3,13 +3,23 @@
 # and apply the manifests. Images are tagged with the current git commit.
 #
 # Usage:   deploy/deploy.sh user@node [--import-content]
-# Needs:   docker, kubectl pointing at the cluster, SSH to the node, and
+# Needs:   docker, kubectl, the kubeconfig from the Ansible playbook, SSH to the node, and
 #          passwordless sudo for `k3s ctr` on the node (see deploy/README.md).
 set -euo pipefail
 
 node=${1:?usage: deploy/deploy.sh user@node [--import-content]}
 import_content=${2:-}
 cd "$(dirname "$0")/.."
+
+# Always the homelab cluster, never whatever kubectl's current context happens to
+# be on this machine. Away from the tailnet, point FORGLEMMIGEJ_KUBECONFIG at a
+# copy that uses the node's LAN address.
+export KUBECONFIG=${FORGLEMMIGEJ_KUBECONFIG:-deploy/ansible/kubeconfig}
+expected=$(ssh "$node" hostname)
+if ! kubectl get node "$expected" >/dev/null; then
+  echo "kubectl ($KUBECONFIG) does not reach the cluster of node $expected; nothing deployed" >&2
+  exit 2
+fi
 
 tag=$(git rev-parse --short HEAD)
 if [ -n "$(git status --porcelain)" ]; then
