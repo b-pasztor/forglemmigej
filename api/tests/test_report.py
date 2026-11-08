@@ -128,10 +128,10 @@ def test_publish_commits_only_when_the_content_changed() -> None:
         return response
 
     with mock.patch("urllib.request.urlopen", fake_urlopen):
-        assert not report.publish(content, "o/r", "report-data", "report.json", "t")
-        assert report.publish(b"{}\n", "o/r", "report-data", "report.json", "t")
+        assert not report.publish(content, "o/r", "main", "report.json", "t")
+        assert report.publish(b"{}\n", "o/r", "main", "report.json", "t")
     assert [method for method, _ in calls] == ["GET", "GET", "PUT"]
-    assert calls[0][1].endswith("/repos/o/r/contents/report.json?ref=report-data")
+    assert calls[0][1].endswith("/repos/o/r/contents/report.json?ref=main")
 
 
 def test_publishing_without_a_token_is_skipped(monkeypatch) -> None:

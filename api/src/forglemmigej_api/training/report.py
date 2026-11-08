@@ -6,7 +6,11 @@ no cards, words, answers or single reviews, and no daily activity. Weeks with
 too few reviews show only their count, since a metric on a handful of reviews
 is noise (and closer to an individual review).
 
-Usage (writes the JSON; with --publish also commits it to the data branch):
+The homelab cannot be reached from outside, so it pushes: report.json is
+committed to a separate data repository, so that the token it needs can write
+there and nowhere else (not to the code).
+
+Usage (writes the JSON; with --publish also commits it to the data repository):
     uv run --group ml python -m forglemmigej_api.training.report --out report.json
 """
 
@@ -34,6 +38,7 @@ TIMEZONE = ZoneInfo("Europe/Zurich")
 MIN_WEEK_REVIEWS = 20  # below this a week shows only its review count
 CALIBRATION_BINS = 10
 SCHEMA_VERSION = 1
+DATA_REPOSITORY = "b-pasztor/forglemmigej-report"
 
 
 def _week_start(timestamps: pd.Series) -> pd.Series:
@@ -223,8 +228,8 @@ def publish_from_environment(report: dict) -> str:
     token = os.environ.get("REPORT_GITHUB_TOKEN")
     if not token:
         return "skipped: no REPORT_GITHUB_TOKEN"
-    repository = os.environ.get("REPORT_REPOSITORY", "b-pasztor/forglemmigej")
-    branch = os.environ.get("REPORT_BRANCH", "report-data")
+    repository = os.environ.get("REPORT_REPOSITORY", DATA_REPOSITORY)
+    branch = os.environ.get("REPORT_BRANCH", "main")
     try:
         changed = publish(render(report), repository, branch, "report.json", token)
     except (urllib.error.URLError, OSError, ValueError, KeyError) as error:

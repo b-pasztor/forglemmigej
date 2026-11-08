@@ -50,8 +50,8 @@ spec:
               envFrom:
                 - secretRef:
                     name: forglemmigej-db
-                # Optional: a GitHub token that may write this repository's
-                # contents, to publish the model report (see deploy/README.md).
+                # Optional: a GitHub token that may write only the report's data
+                # repository, to publish the model report (see deploy/README.md).
                 - secretRef:
                     name: forglemmigej-report
                     optional: true
