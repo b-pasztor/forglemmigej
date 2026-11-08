@@ -31,5 +31,5 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Model report data: published from the homelab to the report-data branch
+# Model report data: published from the homelab to b-pasztor/forglemmigej-report
 report/report.json

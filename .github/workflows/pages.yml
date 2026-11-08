@@ -1,6 +1,7 @@
 # The public model report on GitHub Pages: the static page from report/ plus
 # the latest report.json, which the nightly job on the homelab commits to the
-# report-data branch (the homelab is not reachable from here, so it pushes).
+# public data repository b-pasztor/forglemmigej-report (the homelab is not
+# reachable from here, so it pushes; its token can write only there).
 # Runs when the page changes and every evening after the nightly job.
 name: pages
 
@@ -27,8 +28,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Add the latest report data
         run: |
-          git fetch --depth=1 origin report-data
-          git show FETCH_HEAD:report.json > report/report.json
+          curl -sSfL -o report/report.json             https://raw.githubusercontent.com/b-pasztor/forglemmigej-report/main/report.json
           python3 -c "import json; r = json.load(open('report/report.json')); print('report of', r['generated_at'])"
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

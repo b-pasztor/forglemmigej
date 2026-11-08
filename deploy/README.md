@@ -113,13 +113,15 @@ kubectl -n forglemmigej get secret forglemmigej-grafana -o jsonpath='{.data.GF_S
 ## The public model report
 
 The nightly job also builds the model report (weekly aggregates only, see
-`api/src/forglemmigej_api/training/report.py`) and commits `report.json` to the
-`report-data` branch through the GitHub API; the `pages` workflow publishes it with
-the page in `report/` at <https://b-pasztor.github.io/forglemmigej/>. Publishing
-needs a token, kept only in the cluster: a fine-grained personal access token for
-this repository alone, with *Contents: read and write* and nothing else (`main` is
-protected by a ruleset, so it can only write other branches). Without the secret
-the job skips publishing. Renew it before it expires:
+`api/src/forglemmigej_api/training/report.py`) and commits `report.json` through
+the GitHub API to a separate public data repository,
+[forglemmigej-report](https://github.com/b-pasztor/forglemmigej-report); the `pages`
+workflow publishes it with the page in `report/` at
+<https://b-pasztor.github.io/forglemmigej/>. Publishing needs a token, kept only in
+the cluster: a fine-grained personal access token for the data repository alone,
+with *Contents: read and write* and nothing else, so a leaked token could at worst
+change the report's numbers, never the code. Without the secret the job skips
+publishing. Renew it before it expires:
 
 ```bash
 read -rs TOKEN && kubectl -n forglemmigej create secret generic forglemmigej-report   --from-literal=REPORT_GITHUB_TOKEN="$TOKEN" --dry-run=client -o yaml | kubectl apply -f -
