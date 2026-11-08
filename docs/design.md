@@ -108,7 +108,7 @@ Order: the core loop first; the model report comes with the retraining work; the
 - **Orchestration:** Kubernetes CronJobs: `nightly-training` at 19:30, the backup at 20:00 (Prefect or Dagster if it grows).
 - **Monitoring:** Grafana on PostgreSQL for model and learning metrics; Prometheus for system metrics and alerting later; drift reports with Evidently.
 - **Infrastructure:** Debian 13 + Ansible, single-node k3s; Docker Compose for local development only.
-- **CI/CD:** GitHub Actions on hosted runners (`.github/workflows/`): `api` (ruff, the full test suite against PostgreSQL), `web` (svelte-check, lint, tests, build), `deploy` (kustomize + kubeconform, shellcheck, the three image builds); each runs only when its part changes. Actions are pinned to commit SHAs and kept current by Dependabot. Deployment stays `deploy.sh` from the laptop, since hosted runners cannot reach the homelab; self-hosted runners must never run pull requests from forks.
+- **CI/CD:** GitHub Actions on hosted runners (`.github/workflows/`): `api` (ruff, the full test suite against PostgreSQL), `web` (svelte-check, lint, tests, build), `deploy` (kustomize + kubeconform, shellcheck, the three image builds); each runs only when its part changes, and one summary check (`ci`) is what branch protection requires. Actions are pinned to commit SHAs and kept current by Dependabot. Deployment stays `deploy.sh` from the laptop, since hosted runners cannot reach the homelab; self-hosted runners must never run pull requests from forks.
 
 ## Open questions
 

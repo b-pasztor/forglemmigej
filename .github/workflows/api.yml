@@ -2,19 +2,12 @@
 # against a real PostgreSQL, as in development.
 name: api
 
+# Called by ci.yml when this part changed.
 on:
-  push:
-    branches: [main]
-    paths: ["api/**", "data/curation/**", ".github/workflows/api.yml"]
-  pull_request:
-    paths: ["api/**", "data/curation/**", ".github/workflows/api.yml"]
+  workflow_call:
 
 permissions:
   contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   test:

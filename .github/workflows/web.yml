@@ -1,19 +1,12 @@
 # The review app: types, lint, unit tests and the static build.
 name: web
 
+# Called by ci.yml when this part changed.
 on:
-  push:
-    branches: [main]
-    paths: ["web/**", ".github/workflows/web.yml"]
-  pull_request:
-    paths: ["web/**", ".github/workflows/web.yml"]
+  workflow_call:
 
 permissions:
   contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   test:

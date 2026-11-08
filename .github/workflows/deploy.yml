@@ -3,19 +3,12 @@
 # loads them into the homelab's k3s, which a hosted runner cannot reach.
 name: deploy
 
+# Called by ci.yml when this part changed.
 on:
-  push:
-    branches: [main]
-    paths: ["deploy/**", "api/**", "web/**", "data/curation/**", ".github/workflows/deploy.yml"]
-  pull_request:
-    paths: ["deploy/**", "api/**", "web/**", "data/curation/**", ".github/workflows/deploy.yml"]
+  workflow_call:
 
 permissions:
   contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 env:
   KUBECONFORM_VERSION: v0.8.0
