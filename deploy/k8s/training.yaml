@@ -1,5 +1,6 @@
 # Nightly training: evaluates every model on recent reviews (shadow predictions),
-# fits a new FSRS challenger once there is enough data, and logs the run to MLflow.
+# fits a new FSRS challenger once there is enough data, logs the run to MLflow and
+# publishes the model report.
 # 19:30, before the 20:00 backup and the evening shutdown; a run missed while the
 # node was off starts at the next boot.
 # Run it now: kubectl -n forglemmigej create job --from=cronjob/nightly-training train-now
@@ -49,6 +50,11 @@ spec:
               envFrom:
                 - secretRef:
                     name: forglemmigej-db
+                # Optional: a GitHub token that may write this repository's
+                # contents, to publish the model report (see deploy/README.md).
+                - secretRef:
+                    name: forglemmigej-report
+                    optional: true
               env:
                 - name: POSTGRES_HOST
                   value: postgres

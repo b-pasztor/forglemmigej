@@ -138,7 +138,8 @@ To run the production images locally: `docker compose --profile app up --build`
 - [x] Grafana dashboards: log loss per model, calibration, predicted vs actual recall, gate evidence, learning progress
 - [ ] Drift alerts (prediction error over time and input distributions; Evidently reports)
 - [ ] System metrics and alerting with Prometheus
-- [ ] Public showcase on GitHub Pages: a published model report, then a try-it demo running fully in the browser
+- [x] Public [model report](https://b-pasztor.github.io/forglemmigej/) on GitHub Pages, published by the nightly job (weekly aggregates only)
+- [ ] A try-it demo running fully in the browser
 - [ ] Audio (Danish TTS), pronunciation practice (Whisper), an LLM helper for grammar questions
 
 ## Attribution

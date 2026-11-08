@@ -71,6 +71,9 @@ def shadow_predictions(session: Session, since: datetime) -> pd.DataFrame:
             "model_version", "predicted_recall", "is_champion",
         ],
     )  # fmt: skip
+    for column in ("reviewed_at", "previous_at"):  # also typed when empty
+        frame[column] = pd.to_datetime(frame[column], utc=True)
+    frame["is_champion"] = frame["is_champion"].astype(bool)
     frame["recalled"] = (frame["grade"] > Grade.AGAIN).astype(int)
     frame["gap_days"] = (
         frame["reviewed_at"] - frame["previous_at"]
@@ -216,6 +219,22 @@ def run(session: Session, now: datetime, min_reviews: int) -> dict:
     return result
 
 
+def model_report(session: Session, now: datetime) -> str:
+    """Build the public model report and publish it if configured. A failure here
+    is logged, never raised: it must not roll back the night's training."""
+    from forglemmigej_api.training.report import build_report, publish_from_environment
+
+    try:
+        report = build_report(session, now)
+    except Exception as error:  # noqa: BLE001 (see the docstring)
+        status = f"failed: {error!r}"
+    else:
+        mlflow.log_dict(report, "report.json")
+        status = publish_from_environment(report)
+    mlflow.set_tag("report", status)
+    return status
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--min-reviews", type=int, default=DEFAULT_MIN_REVIEWS)
@@ -230,6 +249,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         SessionLocal().begin() as session,
     ):
         result = run(session, now, args.min_reviews)
+        result["report"] = model_report(session, now)
     print(json.dumps(result, default=str, indent=2))
     return 0
 
