@@ -10,9 +10,10 @@ are to still remember each card. Every answer is new training data. A retrained
 model only replaces the running one when it predicts your memory better, and that
 is checked automatically. Everything runs on one small home server without a GPU.
 
-> **Status: work in progress.** The learning app, the content pipeline and the
-> deployment work today. Retraining, the champion/challenger gate and the
-> dashboards are being built. See [Roadmap](#roadmap).
+> **Status: the full loop runs.** I use the app daily on my phone. Reviews feed a
+> nightly job that evaluates every model in shadow mode, refits FSRS when there is
+> enough data, and runs the champion/challenger gate; Grafana shows the evidence.
+> Next: drift alerts and a public model report. See [Roadmap](#roadmap).
 
 ## Why this project
 
@@ -70,13 +71,27 @@ models are compared on exactly the same reviews.
 
 The full reasoning is in [docs/design.md](docs/design.md); how the code is organised is in [docs/development.md](docs/development.md).
 
+## Results so far
+
+- **On public data** (held-out Anki review logs, chronological split): LightGBM with
+  history features reaches log loss 0.334 against 0.405 for default FSRS
+  ([notebook 01](notebooks/01-pretraining-on-public-reviews.ipynb)). FSRS fitted to
+  each learner beats the defaults for every learner, once there are enough reviews
+  ([notebook 02](notebooks/02-fitting-fsrs-per-learner.ipynb)).
+- **On my own reviews:** the gate has not promoted anything yet, and that is the
+  system working as intended. Only reviews at least a day after the card's previous
+  one say something about memory, the gate needs 300 of them shared by both models,
+  and the FSRS optimizer needs 512 before it changes anything. A beginner produces
+  a few dozen such reviews a day, so the evidence builds up over weeks, not days.
+  Until then the champion keeps scheduling, and the dashboards show why.
+
 ## Stack
 
 | Layer | Choice |
 |---|---|
 | App | SvelteKit (SPA) · FastAPI · PostgreSQL |
 | Memory model | FSRS (champion) · scikit-learn / LightGBM (challengers) |
-| MLOps | MLflow · scheduled retraining · Evidently · Prometheus + Grafana |
+| MLOps | MLflow · nightly retraining (Kubernetes CronJob) · Grafana on PostgreSQL |
 | Platform | Debian 13 · k3s on one HP mini PC · Tailscale · GitHub Actions |
 
 ## Repository layout
@@ -121,7 +136,8 @@ To run the production images locally: `docker compose --profile app up --build`
 - [x] MLflow tracking and the nightly training job (shadow evaluation, FSRS fitting)
 - [x] Champion/challenger promotion gate (nightly, next to the data; log loss with a bootstrap test plus calibration; automatic promotion and rollback)
 - [x] Grafana dashboards: log loss per model, calibration, predicted vs actual recall, gate evidence, learning progress
-- [ ] Drift alerts
+- [ ] Drift alerts (prediction error over time and input distributions; Evidently reports)
+- [ ] System metrics and alerting with Prometheus
 - [ ] Public showcase on GitHub Pages: a published model report, then a try-it demo running fully in the browser
 - [ ] Audio (Danish TTS), pronunciation practice (Whisper), an LLM helper for grammar questions
 
