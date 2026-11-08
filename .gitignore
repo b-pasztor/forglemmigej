@@ -30,3 +30,6 @@ graphify-out/
 Thumbs.db
 .idea/
 .vscode/
+
+# Model report data: published from the homelab to the report-data branch
+report/report.json

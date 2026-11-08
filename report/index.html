@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>forglemmigej · model report</title>
+<meta name="description" content="How well the memory models behind forglemmigej predict recall, week by week: champion vs shadow challengers, calibration and the promotion gate.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%235b8fd6'%3E%3Ccircle cx='16' cy='8' r='6'/%3E%3Ccircle cx='24' cy='14' r='6'/%3E%3Ccircle cx='21' cy='23' r='6'/%3E%3Ccircle cx='11' cy='23' r='6'/%3E%3Ccircle cx='8' cy='14' r='6'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='4' fill='%23f2c94c'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --ink: #1d2430;
+  --muted: #5d6675;
+  --faint: #8a93a1;
+  --line: #e3e1da;
+  --grid: #ecebe5;
+  --accent: #2f5d9e;
+  --good: #2f7a55;
+  --warn: #9a6516;
+  --m1: #2f5d9e;
+  --m2: #c2632a;
+  --m3: #2f8a5f;
+  --m4: #8a5aa8;
+  --radius: 14px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161c;
+    --surface: #1a2028;
+    --ink: #e7eaee;
+    --muted: #a3acb9;
+    --faint: #7b8594;
+    --line: #2a313b;
+    --grid: #232a33;
+    --accent: #8db4ec;
+    --good: #6fc79a;
+    --warn: #e0b263;
+    --m1: #8db4ec;
+    --m2: #f0a070;
+    --m3: #73cf9d;
+    --m4: #c49ce0;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+main { max-width: 960px; margin: 0 auto; padding: 40px 16px 64px; }
+a { color: var(--accent); text-underline-offset: 2px; }
+h1, h2, h3 { line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; }
+h1 { font-size: clamp(1.75rem, 4vw, 2.4rem); margin: 0 0 8px; }
+h2 { font-size: 1.25rem; margin: 0 0 4px; }
+h3 { font-size: 1rem; margin: 0; }
+p { margin: 0 0 12px; }
+.eyebrow { color: var(--accent); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+.lede { color: var(--muted); font-size: 1.08rem; max-width: 62ch; }
+.meta { color: var(--faint); font-size: 0.9rem; margin-top: 12px; }
+code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85em; }
+section { margin-top: 48px; }
+.section-intro { color: var(--muted); max-width: 68ch; margin-bottom: 18px; }
+.grid { display: grid; gap: 14px; }
+.kpis { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 32px; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  min-width: 0;
+}
+.kpi .label { color: var(--muted); font-size: 0.85rem; }
+.kpi .value { font-size: 1.4rem; font-weight: 600; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+.kpi .note { color: var(--faint); font-size: 0.85rem; }
+.progress { height: 6px; background: var(--grid); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+.progress > span { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.gate-card header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.pill { font-size: 0.8rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.keep { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
+.pill.promote { background: color-mix(in srgb, var(--good) 14%, transparent); color: var(--good); }
+.checks { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
+.checks li { display: grid; grid-template-columns: 22px 1fr; gap: 6px; color: var(--muted); font-size: 0.95rem; }
+.checks .ok { color: var(--good); font-weight: 700; }
+.checks .no { color: var(--warn); font-weight: 700; }
+.numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 14px; }
+.numbers div { font-size: 0.85rem; color: var(--muted); }
+.numbers b { display: block; color: var(--ink); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.chart-card h3 { margin-bottom: 2px; }
+.chart-card .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 10px; }
+.charts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+svg.chart text { fill: var(--faint); font-size: 13px; font-family: inherit; }
+svg.chart .gridline { stroke: var(--grid); stroke-width: 1; }
+svg.chart .axis { stroke: var(--line); }
+svg.chart .ref { stroke: var(--faint); stroke-dasharray: 4 4; stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 0.85rem; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: var(--c); vertical-align: -1px; }
+.legend span.dashed::before { border-radius: 0; height: 0; width: 14px; border-top: 2px dashed var(--c); background: none; vertical-align: 3px; }
+.empty { color: var(--faint); font-size: 0.95rem; padding: 24px 0; text-align: center; }
+table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 0.85rem; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.table-wrap { overflow-x: auto; }
+.explain { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.explain .card p { color: var(--muted); font-size: 0.95rem; margin: 6px 0 0; }
+footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--faint); font-size: 0.88rem; }
+#error { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">forglemmigej · model report</div>
+    <h1>Which memory model predicts my Danish best?</h1>
+    <p class="lede">A spaced-repetition app schedules each card for the moment I am about to forget it.
+      The champion model decides; challengers predict every review in shadow mode. This page shows,
+      week by week, how well each one predicted what actually happened, and whether a challenger
+      has earned the right to take over.</p>
+    <p class="meta" id="meta">Loading…</p>
+  </header>
+
+  <div class="card" id="error"><p>The report data could not be loaded.</p></div>
+
+  <div class="grid kpis" id="kpis"></div>
+
+  <section>
+    <h2>The gate: is a challenger ready?</h2>
+    <p class="section-intro" id="gate-intro"></p>
+    <div class="grid" id="gate"></div>
+  </section>
+
+  <section>
+    <h2>Week by week</h2>
+    <p class="section-intro">Only reviews at least a day after the card's previous one count: minutes after
+      learning every model predicts nearly 100%, which says nothing about memory. Weeks with fewer than
+      <span id="min-week"></span> such reviews show only their count.</p>
+    <div class="grid charts">
+      <div class="card chart-card">
+        <h3>Prediction error (log loss)</h3>
+        <p class="sub">Per model, on the same reviews. Lower is better.</p>
+        <div id="chart-logloss"></div>
+      </div>
+      <div class="card chart-card">
+        <h3>Predicted vs actual recall</h3>
+        <p class="sub">What the champion expected, and what happened. A widening gap is drift.</p>
+        <div id="chart-drift"></div>
+      </div>
+      <div class="card chart-card">
+        <h3>Calibration, all reviews so far</h3>
+        <p class="sub">When a model says 80%, are 80% of those cards remembered? On the diagonal is perfect.</p>
+        <div id="chart-calibration"></div>
+      </div>
+      <div class="card chart-card">
+        <h3>Evidence per week</h3>
+        <p class="sub">Reviews a day or more after the previous one: what the gate can learn from.</p>
+        <div id="chart-volume"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Models and promotions</h2>
+    <p class="section-intro">Every model version is registered with its exact parameters, so a library
+      upgrade cannot silently change a live model. A promotion rebuilds every card's schedule from the
+      append-only review log.</p>
+    <div class="card table-wrap"><table id="models"></table></div>
+    <div class="card table-wrap" style="margin-top:14px" id="promotions"></div>
+  </section>
+
+  <section>
+    <h2>How to read this</h2>
+    <div class="grid explain">
+      <div class="card"><h3>Log loss</h3><p>The main score. It punishes confident mistakes: saying 95% for a card I then forgot costs far more than saying 60%.</p></div>
+      <div class="card"><h3>Calibration</h3><p>The scheduler acts on the probability itself (a card is due when recall would drop below 90%), so a model must be right about the number, not just the ranking.</p></div>
+      <div class="card"><h3>Bootstrap over cards</h3><p>Reviews of the same card are not independent. The gate resamples whole cards and asks how often the challenger still wins; one lucky week is not enough.</p></div>
+      <div class="card"><h3>Why "no promotion" is a result</h3><p>With a few dozen usable reviews a day, the evidence takes weeks. Until then the champion keeps scheduling; the gate refusing is the system working.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Generated by the nightly training job on a homelab k3s node and published as static data.
+      Only weekly aggregates leave the homelab: no cards, words, answers or single reviews.</p>
+    <p>Code and design: <a href="https://github.com/b-pasztor/forglemmigej">github.com/b-pasztor/forglemmigej</a>
+      (<a href="https://github.com/b-pasztor/forglemmigej/blob/main/docs/design.md">design notes</a>).</p>
+  </footer>
+</main>
+
+<script>
+"use strict";
+const SVG = "http://www.w3.org/2000/svg";
+const PALETTE = ["--m1", "--m2", "--m3", "--m4"];
+
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") node.className = v;
+    else if (k === "style") node.setAttribute("style", v);
+    else node.setAttribute(k, v);
+  }
+  for (const child of children.flat()) {
+    if (child != null) node.append(child instanceof Node ? child : String(child));
+  }
+  return node;
+}
+function s(tag, attrs = {}, text) {
+  const node = document.createElementNS(SVG, tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (text != null) node.textContent = text;
+  return node;
+}
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const pct = (x, digits = 0) => (x == null ? "–" : (100 * x).toFixed(digits) + "%");
+const num = (x, digits = 3) => (x == null ? "–" : x.toFixed(digits));
+const date = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+function modelName(version, kind) {
+  if (version === "fsrs6-default") return "FSRS-6, default parameters";
+  if (version.startsWith("fsrs-fitted-")) return "FSRS fitted to my reviews";
+  if (version.startsWith("lightgbm-public-")) return "LightGBM, pre-trained on public logs";
+  return kind === "fsrs" ? "FSRS" : kind;
+}
+
+function plainReason(reason, rules) {
+  let m;
+  if ((m = reason.match(/^(\w+) models cannot schedule/)))
+    return `Predicts only: a ${m[1] === "lightgbm" ? "LightGBM" : m[1]} model cannot compute the next interval, so it is compared but never promoted.`;
+  if ((m = reason.match(/^(\d+) shared reviews < (\d+)/)))
+    return `Not enough evidence yet: ${m[1]} of ${m[2]} shared reviews.`;
+  if ((m = reason.match(/in (\d+)% of resamples < (\d+)%/)))
+    return `Not convincingly better: lower log loss in ${m[1]}% of bootstrap resamples (needs ${m[2]}%).`;
+  if ((m = reason.match(/^worse calibrated \(RMSE ([\d.]+) vs ([\d.]+)\)/)))
+    return `Worse calibrated: error ${m[1]} vs the champion's ${m[2]} (tolerance ${rules.gate_calibration_tolerance}).`;
+  return reason;
+}
+
+// --- charts --------------------------------------------------------------------
+const W = 440, H = 240, PAD = { l: 40, r: 12, t: 12, b: 28 };
+
+function frame(yMin, yMax, yTicks, yFmt, xLabels) {
+  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img" });
+  const x = (i) => PAD.l + (xLabels.length <= 1 ? (W - PAD.l - PAD.r) / 2 : (i * (W - PAD.l - PAD.r)) / (xLabels.length - 1));
+  const y = (v) => H - PAD.b - ((v - yMin) / (yMax - yMin)) * (H - PAD.t - PAD.b);
+  for (const t of yTicks) {
+    svg.append(s("line", { x1: PAD.l, x2: W - PAD.r, y1: y(t), y2: y(t), class: "gridline" }));
+    svg.append(s("text", { x: PAD.l - 6, y: y(t) + 4, "text-anchor": "end" }, yFmt(t)));
+  }
+  const every = Math.ceil(xLabels.length / 6);
+  xLabels.forEach((label, i) => {
+    if (i % every === 0 || i === xLabels.length - 1)
+      svg.append(s("text", { x: x(i), y: H - 8, "text-anchor": "middle" }, label));
+  });
+  return { svg, x, y };
+}
+
+function ticks(min, max, step) {
+  const out = [];
+  for (let t = Math.ceil(min / step) * step; t <= max + 1e-9; t += step) out.push(+t.toFixed(4));
+  return out;
+}
+
+function lines(container, xLabels, series, { yMin, yMax, step, fmt, ref }) {
+  const { svg, x, y } = frame(yMin, yMax, ticks(yMin, yMax, step), fmt, xLabels);
+  if (ref != null) svg.append(s("line", { x1: PAD.l, x2: W - PAD.r, y1: y(ref), y2: y(ref), class: "ref" }));
+  for (const line of series) {
+    let d = "";
+    let pen = false;
+    line.values.forEach((v, i) => {
+      if (v == null) { pen = false; return; }
+      d += `${pen ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`;
+      pen = true;
+    });
+    if (d) svg.append(s("path", { d, fill: "none", stroke: line.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-dasharray": line.dashed ? "5 4" : "none" }));
+    line.values.forEach((v, i) => {
+      if (v == null) return;
+      const dot = s("circle", { cx: x(i), cy: y(v), r: 3.5, fill: line.color });
+      dot.append(s("title", {}, `${line.label}, week of ${xLabels[i]}: ${fmt(v, true)}`));
+      svg.append(dot);
+    });
+  }
+  container.replaceChildren(svg, legend(series));
+}
+
+function legend(series) {
+  return el("div", { class: "legend" }, series.map((l) => el("span", { class: l.dashed ? "dashed" : "", style: `--c:${l.color}` }, l.label)));
+}
+
+function bars(container, xLabels, values, threshold) {
+  const max = Math.max(threshold * 1.5, ...values);
+  const step = max > 200 ? 100 : max > 80 ? 20 : 10;
+  const { svg, x, y } = frame(0, Math.ceil(max / step) * step, ticks(0, Math.ceil(max / step) * step, step), (v) => v, xLabels);
+  const width = Math.min(36, ((W - PAD.l - PAD.r) / Math.max(values.length, 1)) * 0.6);
+  svg.append(s("line", { x1: PAD.l, x2: W - PAD.r, y1: y(threshold), y2: y(threshold), class: "ref" }));
+  values.forEach((v, i) => {
+    const bar = s("rect", { x: x(i) - width / 2, y: y(v), width, height: Math.max(0, y(0) - y(v)), rx: 3, fill: v >= threshold ? css("--accent") : css("--faint"), opacity: v >= threshold ? 1 : 0.5 });
+    bar.append(s("title", {}, `Week of ${xLabels[i]}: ${v} usable reviews`));
+    svg.append(bar);
+  });
+  container.replaceChildren(svg, legend([
+    { label: "Weeks with metrics", color: css("--accent") },
+    { label: `Fewer than ${threshold}: count only`, color: css("--faint") },
+  ]));
+}
+
+function calibration(container, data, colorOf) {
+  const versions = Object.keys(data);
+  if (!versions.length) { container.replaceChildren(el("p", { class: "empty" }, "No usable reviews yet.")); return; }
+  const all = versions.flatMap((v) => data[v]);
+  const lo = Math.max(0, Math.floor(Math.min(...all.map((b) => Math.min(b.predicted, b.actual))) * 10) / 10);
+  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img" });
+  const x = (v) => PAD.l + ((v - lo) / (1 - lo)) * (W - PAD.l - PAD.r);
+  const y = (v) => H - PAD.b - ((v - lo) / (1 - lo)) * (H - PAD.t - PAD.b);
+  for (const t of ticks(lo, 1, 0.1)) {
+    svg.append(s("line", { x1: PAD.l, x2: W - PAD.r, y1: y(t), y2: y(t), class: "gridline" }));
+    svg.append(s("text", { x: PAD.l - 6, y: y(t) + 4, "text-anchor": "end" }, pct(t)));
+    svg.append(s("text", { x: x(t), y: H - 8, "text-anchor": "middle" }, pct(t)));
+  }
+  svg.append(s("line", { x1: x(lo), y1: y(lo), x2: x(1), y2: y(1), class: "ref" }));
+  const maxN = Math.max(...all.map((b) => b.n));
+  for (const v of versions) {
+    const color = colorOf(v);
+    const pts = data[v];
+    svg.append(s("path", { d: pts.map((b, i) => `${i ? "L" : "M"}${x(b.predicted).toFixed(1)},${y(b.actual).toFixed(1)}`).join(""), fill: "none", stroke: color, "stroke-width": 1.5, opacity: 0.6 }));
+    for (const b of pts) {
+      const dot = s("circle", { cx: x(b.predicted), cy: y(b.actual), r: 3 + 5 * Math.sqrt(b.n / maxN), fill: color, "fill-opacity": 0.75 });
+      dot.append(s("title", {}, `Predicted ${pct(b.predicted)}, recalled ${pct(b.actual)} (${b.n} reviews)`));
+      svg.append(dot);
+    }
+  }
+  container.replaceChildren(svg, legend(versions.map((v) => ({ label: modelName(v), color: colorOf(v) }))),
+    el("p", { class: "sub", style: "margin-top:6px" }, "Dot size: number of reviews. Above the diagonal: the model was too pessimistic."));
+}
+
+// --- page ------------------------------------------------------------------------
+function render(r) {
+  const rules = r.rules;
+  const models = Object.fromEntries(r.models.map((m) => [m.version, m]));
+  const champion = r.models.find((m) => m.role === "champion");
+  const order = r.models.map((m) => m.version);
+  const colorOf = (v) => css(PALETTE[Math.max(0, order.indexOf(v)) % PALETTE.length]);
+  const challengers = r.models.filter((m) => m.role === "challenger");
+
+  document.getElementById("meta").textContent =
+    `Updated ${new Date(r.generated_at + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}` +
+    (r.totals.first_week ? ` · data since ${date(r.totals.first_week)}` : "");
+  document.getElementById("min-week").textContent = rules.min_week_reviews;
+
+  const usable = r.totals.usable_reviews;
+  const kpi = (label, value, note, progress) =>
+    el("div", { class: "card kpi" }, el("div", { class: "label" }, label), el("div", { class: "value" }, value),
+      el("div", { class: "note" }, note),
+      progress == null ? null : el("div", { class: "progress" }, el("span", { style: `width:${Math.min(100, 100 * progress)}%` })));
+  document.getElementById("kpis").replaceChildren(
+    kpi("Champion", champion ? modelName(champion.version, champion.kind) : "–", champion ? `since ${date(champion.registered)}` : ""),
+    kpi("Usable reviews", usable.toLocaleString("en-GB"), `a day or more apart · FSRS refit from ${rules.fit_min_reviews}`, usable / rules.fit_min_reviews),
+    kpi("Challengers in shadow mode", challengers.length, challengers.map((m) => modelName(m.version, m.kind)).join(" · ") || "none"),
+    kpi("Promotions", r.promotions.length, r.promotions.length ? `last on ${date(r.promotions.at(-1).date)}` : "the champion has held so far"),
+  );
+
+  document.getElementById("gate-intro").textContent =
+    `A challenger replaces the champion only if, on at least ${rules.gate_min_reviews} reviews both predicted, ` +
+    `it has lower log loss in at least ${pct(rules.gate_confidence)} of bootstrap resamples over cards, and is not ` +
+    `worse calibrated (by more than ${rules.gate_calibration_tolerance}). It must also be able to schedule.`;
+  const gate = document.getElementById("gate");
+  if (!r.gate.length) gate.replaceChildren(el("div", { class: "card empty" }, "No challenger is being judged right now."));
+  else gate.replaceChildren(...r.gate.map((d) => {
+    const checks = [
+      [d.kind === "fsrs", d.kind === "fsrs" ? "Can schedule (FSRS)." : null],
+      [d.n >= rules.gate_min_reviews, d.n >= rules.gate_min_reviews ? `Enough evidence: ${d.n} shared reviews.` : null],
+      [d.p_better != null && d.p_better >= rules.gate_confidence, d.p_better >= rules.gate_confidence ? `Better in ${pct(d.p_better)} of resamples.` : null],
+      [d.challenger_rmse_bins != null && d.challenger_rmse_bins <= d.champion_rmse_bins + rules.gate_calibration_tolerance, "Calibration not worse."],
+    ];
+    const failed = d.reasons.map((reason) => el("li", {}, el("span", { class: "no" }, "✕"), el("span", {}, plainReason(reason, rules))));
+    const passed = checks.filter(([ok, text]) => ok && text).map(([, text]) => el("li", {}, el("span", { class: "ok" }, "✓"), el("span", {}, text)));
+    return el("div", { class: "card gate-card", style: `border-left: 4px solid ${colorOf(d.challenger)}` },
+      el("header", {}, el("div", {}, el("h3", {}, modelName(d.challenger, d.kind)), el("div", { class: "mono", style: "color:var(--faint)" }, d.challenger)),
+        el("span", { class: `pill ${d.promote ? "promote" : "keep"}` }, d.promote ? "Promote" : "Keep the champion")),
+      el("div", { class: "progress", title: `${d.n} of ${rules.gate_min_reviews} reviews` }, el("span", { style: `width:${Math.min(100, (100 * d.n) / rules.gate_min_reviews)}%` })),
+      el("div", { class: "numbers" },
+        el("div", {}, "Shared reviews", el("b", {}, `${d.n} / ${rules.gate_min_reviews}`)),
+        el("div", {}, "Log loss, champion → challenger", el("b", {}, `${num(d.champion_log_loss)} → ${num(d.challenger_log_loss)}`)),
+        el("div", {}, "Wins in resamples", el("b", {}, pct(d.p_better))),
+        el("div", {}, "Calibration error", el("b", {}, `${num(d.champion_rmse_bins)} → ${num(d.challenger_rmse_bins)}`))),
+      el("ul", { class: "checks" }, passed, failed));
+  }));
+
+  const weeks = r.weeks;
+  const labels = weeks.map((w) => date(w.week));
+  const versions = [...new Set(weeks.flatMap((w) => Object.keys(w.models || {})))];
+  const charts = ["chart-logloss", "chart-drift", "chart-volume"].map((id) => document.getElementById(id));
+  if (!weeks.length) for (const c of charts) c.replaceChildren(el("p", { class: "empty" }, "No usable reviews yet."));
+  else {
+    const losses = weeks.flatMap((w) => Object.values(w.models || {}).map((m) => m.log_loss)).filter((v) => v != null);
+    if (losses.length) {
+      const hi = Math.ceil(Math.max(...losses) * 10 + 0.5) / 10, lo = Math.max(0, Math.floor(Math.min(...losses) * 10 - 0.5) / 10);
+      lines(charts[0], labels, versions.map((v) => ({ label: modelName(v, models[v]?.kind), color: colorOf(v), values: weeks.map((w) => w.models?.[v]?.log_loss ?? null) })),
+        { yMin: lo, yMax: hi, step: hi - lo > 0.4 ? 0.1 : 0.05, fmt: (v) => v.toFixed(2) });
+    } else charts[0].replaceChildren(el("p", { class: "empty" }, "No week has enough reviews yet."));
+    const rates = weeks.flatMap((w) => [w.recall_rate, w.champion_predicted]).filter((v) => v != null);
+    if (rates.length) {
+      const lo = Math.min(0.8, Math.floor(Math.min(...rates) * 20) / 20);
+      lines(charts[1], labels, [
+        { label: "Actually recalled", color: css("--ink"), values: weeks.map((w) => w.recall_rate ?? null) },
+        { label: "Champion predicted", color: colorOf(champion?.version), dashed: true, values: weeks.map((w) => w.champion_predicted ?? null) },
+      ], { yMin: lo, yMax: 1, step: 0.05, fmt: (v) => pct(v) });
+    } else charts[1].replaceChildren(el("p", { class: "empty" }, "No week has enough reviews yet."));
+    bars(charts[2], labels, weeks.map((w) => w.usable_reviews), rules.min_week_reviews);
+  }
+  calibration(document.getElementById("chart-calibration"), r.calibration, colorOf);
+
+  const roleLabel = { champion: "Champion", challenger: "Challenger (shadow)", retired: "Retired" };
+  document.getElementById("models").replaceChildren(
+    el("thead", {}, el("tr", {}, el("th", {}, "Model"), el("th", {}, "Role"), el("th", {}, "Registered"), el("th", { class: "num" }, "Trained on"))),
+    el("tbody", {}, r.models.map((m) => el("tr", {},
+      el("td", {}, el("div", {}, modelName(m.version, m.kind)), el("div", { class: "mono", style: "color:var(--faint)" }, m.version)),
+      el("td", {}, roleLabel[m.role] || m.role),
+      el("td", {}, date(m.registered)),
+      el("td", { class: "num" }, m.trained_on_reviews == null ? "published defaults" : `${m.trained_on_reviews.toLocaleString("en-GB")} reviews`)))));
+  const promotions = document.getElementById("promotions");
+  if (!r.promotions.length) promotions.replaceChildren(el("p", { class: "empty", style: "padding:8px 0" }, "No promotions yet: no challenger has passed the gate."));
+  else promotions.replaceChildren(el("table", {},
+    el("thead", {}, el("tr", {}, el("th", {}, "Date"), el("th", {}, "New champion"), el("th", {}, "Replaced"), el("th", {}, "Decided by"))),
+    el("tbody", {}, r.promotions.map((p) => el("tr", {}, el("td", {}, date(p.date)), el("td", { class: "mono" }, p.version), el("td", { class: "mono" }, p.previous_version), el("td", {}, p.reason === "gate" ? "the gate" : "manual rollback"))))));
+}
+
+fetch("report.json", { cache: "no-cache" })
+  .then((response) => { if (!response.ok) throw new Error(response.status); return response.json(); })
+  .then((report) => {
+    render(report);
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => render(report));
+  })
+  .catch(() => {
+    document.getElementById("meta").textContent = "";
+    document.getElementById("error").style.display = "block";
+  });
+</script>
+</body>
+</html>

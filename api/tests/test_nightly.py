@@ -149,3 +149,8 @@ def test_models_outside_the_active_set_do_not_shrink_the_comparison(
     assert evaluate_models(frame).loc["fsrs6-default", "n"] == 1
     scores = evaluate_models(frame, ["fsrs6-default", "fitted"])
     assert scores.loc["fsrs6-default", "n"] == 2
+
+
+def test_shadow_predictions_of_an_empty_log(db: Session) -> None:
+    frame = shadow_predictions(db, NOW - timedelta(days=14))
+    assert frame.empty and "gap_days" in frame
