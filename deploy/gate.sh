@@ -12,6 +12,10 @@ case ${1:-} in
   *) echo "usage: deploy/gate.sh report | promote VERSION REASON" >&2; exit 2 ;;
 esac
 
+# The homelab cluster, never kubectl's current context (see deploy.sh).
+export KUBECONFIG=${FORGLEMMIGEJ_KUBECONFIG:-$(dirname "$0")/ansible/kubeconfig}
+kubectl get namespace forglemmigej >/dev/null
+
 job="gate-$1-$(date +%s)"
 kubectl -n forglemmigej create job --from=cronjob/nightly-training "$job" --dry-run=client -o yaml \
   | sed -E "s/^( *)name: train$/&\n\1command: [\"python\", \"-m\", \"forglemmigej_api.training.gate\", $args]/" \

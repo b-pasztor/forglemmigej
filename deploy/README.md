@@ -79,6 +79,16 @@ deploy/deploy.sh user@node --import-content   # first time: also imports the dec
 deploy/deploy.sh user@node                    # later deploys
 ```
 
+`deploy.sh` and `gate.sh` always use `deploy/ansible/kubeconfig`, never kubectl's
+current context, and `deploy.sh` checks that it reaches the node's own cluster
+before building anything. When the laptop is not on the tailnet, use a copy that
+points at the node's LAN address (the API certificate covers it):
+
+```bash
+sed 's#https://.*:6443#https://192.168.1.50:6443#' deploy/ansible/kubeconfig > ~/.kube/forglemmigej-lan
+FORGLEMMIGEJ_KUBECONFIG=~/.kube/forglemmigej-lan deploy/deploy.sh user@node
+```
+
 The app is then served on `https://<node>.<tailnet>.ts.net/` to devices on your tailnet
 (Tailscale terminates HTTPS and forwards to Traefik on port 80).
 Schema migrations run automatically (init container) before each new API version starts.

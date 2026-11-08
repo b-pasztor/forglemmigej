@@ -195,6 +195,7 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
 "use strict";
 const SVG = "http://www.w3.org/2000/svg";
 const PALETTE = ["--m1", "--m2", "--m3", "--m4"];
+const MIN_BIN_REVIEWS = 5; // calibration bins with fewer reviews are noise
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -307,7 +308,8 @@ function bars(container, xLabels, values, threshold) {
   ]));
 }
 
-function calibration(container, data, colorOf) {
+function calibration(container, raw, colorOf) {
+  const data = Object.fromEntries(Object.entries(raw).map(([v, bins]) => [v, bins.filter((b) => b.n >= MIN_BIN_REVIEWS)]).filter(([, bins]) => bins.length));
   const versions = Object.keys(data);
   if (!versions.length) { container.replaceChildren(el("p", { class: "empty" }, "No usable reviews yet.")); return; }
   const all = versions.flatMap((v) => data[v]);
@@ -333,7 +335,7 @@ function calibration(container, data, colorOf) {
     }
   }
   container.replaceChildren(svg, legend(versions.map((v) => ({ label: modelName(v), color: colorOf(v) }))),
-    el("p", { class: "sub", style: "margin-top:6px" }, "Dot size: number of reviews. Above the diagonal: the model was too pessimistic."));
+    el("p", { class: "sub", style: "margin-top:6px" }, `Dot size: number of reviews; bins with fewer than ${MIN_BIN_REVIEWS} are left out. Above the diagonal: the model was too pessimistic.`));
 }
 
 // --- page ------------------------------------------------------------------------
@@ -389,7 +391,16 @@ function render(r) {
       el("ul", { class: "checks" }, passed, failed));
   }));
 
-  const weeks = r.weeks;
+  // Every week from the first to the last, so a break shows as a gap, not as nothing.
+  const weeks = [];
+  for (const w of r.weeks) {
+    let last = weeks.at(-1);
+    while (last && Date.parse(w.week) - Date.parse(last.week) > 7 * 864e5) {
+      last = { week: new Date(Date.parse(last.week) + 7 * 864e5).toISOString().slice(0, 10), usable_reviews: 0 };
+      weeks.push(last);
+    }
+    weeks.push(w);
+  }
   const labels = weeks.map((w) => date(w.week));
   const versions = [...new Set(weeks.flatMap((w) => Object.keys(w.models || {})))];
   const charts = ["chart-logloss", "chart-drift", "chart-volume"].map((id) => document.getElementById(id));
