@@ -159,9 +159,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     deck = build(args.raw_dir, args.curation_dir)
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(
-        json.dumps(deck, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
-    )
+    with args.out.open("w", encoding="utf-8", newline="\n") as f:  # LF on Windows too
+        f.write(json.dumps(deck, ensure_ascii=False, indent=1) + "\n")
     types = [c["card_type"] for c in deck["cards"]]
     print(
         f"wrote {args.out}: {len(types)} cards ("
