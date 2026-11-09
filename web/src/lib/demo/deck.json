@@ -1,0 +1,2714 @@
+{
+ "license": {
+  "name": "CC BY-SA 4.0",
+  "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+ },
+ "attribution": [
+  {
+   "name": "Wiktionary (via kaikki.org)",
+   "url": "https://en.wiktionary.org/",
+   "license": "CC BY-SA 4.0"
+  },
+  {
+   "name": "Tatoeba",
+   "url": "https://tatoeba.org/",
+   "license": "CC BY 2.0 FR"
+  }
+ ],
+ "cards": [
+  {
+   "card_id": 1,
+   "card_type": "recognition",
+   "topic": "greetings",
+   "unlocked_by": null,
+   "expected": "Hej",
+   "full_sentence": "Hej, Tom!",
+   "hint": null,
+   "word": {
+    "danish": "hej",
+    "article": null,
+    "english": "hi, hello / bye",
+    "pos": "intj",
+    "glosses": [
+     "hi, hello",
+     "bye"
+    ],
+    "ipa": "/hɑj/",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Hej, Tom!",
+    "english": "Hello, Tom.",
+    "target_form": "Hej"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hej#Danish"
+    },
+    {
+     "name": "Tatoeba #11176690",
+     "url": "https://tatoeba.org/en/sentences/show/11176690"
+    },
+    {
+     "name": "Tatoeba #54604",
+     "url": "https://tatoeba.org/en/sentences/show/54604"
+    }
+   ]
+  },
+  {
+   "card_id": 2,
+   "card_type": "cloze",
+   "topic": "greetings",
+   "unlocked_by": 1,
+   "expected": "Hej",
+   "full_sentence": "Hej, Tom!",
+   "hint": null,
+   "word": {
+    "danish": "hej",
+    "article": null,
+    "english": "hi, hello / bye",
+    "pos": "intj",
+    "glosses": [
+     "hi, hello",
+     "bye"
+    ],
+    "ipa": "/hɑj/",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___, Tom!",
+    "english": "Hello, Tom.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hej#Danish"
+    },
+    {
+     "name": "Tatoeba #11176690",
+     "url": "https://tatoeba.org/en/sentences/show/11176690"
+    },
+    {
+     "name": "Tatoeba #54604",
+     "url": "https://tatoeba.org/en/sentences/show/54604"
+    }
+   ]
+  },
+  {
+   "card_id": 3,
+   "card_type": "recognition",
+   "topic": "greetings",
+   "unlocked_by": null,
+   "expected": "hej hej",
+   "full_sentence": null,
+   "hint": null,
+   "word": {
+    "danish": "hej hej",
+    "article": null,
+    "english": "bye",
+    "pos": "intj",
+    "glosses": [
+     "bye"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hej_hej#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 4,
+   "card_type": "recall",
+   "topic": "greetings",
+   "unlocked_by": 3,
+   "expected": "hej hej",
+   "full_sentence": null,
+   "hint": "h__ h__",
+   "word": {
+    "danish": "hej hej",
+    "article": null,
+    "english": "bye",
+    "pos": "intj",
+    "glosses": [
+     "bye"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hej_hej#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 5,
+   "card_type": "recognition",
+   "topic": "greetings",
+   "unlocked_by": null,
+   "expected": "Goddag",
+   "full_sentence": "Goddag. Hvad ønsker du?",
+   "hint": null,
+   "word": {
+    "danish": "goddag",
+    "article": null,
+    "english": "good day",
+    "pos": "intj",
+    "glosses": [
+     "good day"
+    ],
+    "ipa": "/ɡoˈdaːˀɣ/",
+    "compound_parts": [
+     "god",
+     "dag"
+    ]
+   },
+   "context": {
+    "danish": "Goddag. Hvad ønsker du?",
+    "english": "Good day. What do you want?",
+    "target_form": "Goddag"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/goddag#Danish"
+    },
+    {
+     "name": "Tatoeba #2530398",
+     "url": "https://tatoeba.org/en/sentences/show/2530398"
+    },
+    {
+     "name": "Tatoeba #2310291",
+     "url": "https://tatoeba.org/en/sentences/show/2310291"
+    }
+   ]
+  },
+  {
+   "card_id": 6,
+   "card_type": "cloze",
+   "topic": "greetings",
+   "unlocked_by": 5,
+   "expected": "Goddag",
+   "full_sentence": "Goddag. Hvad ønsker du?",
+   "hint": null,
+   "word": {
+    "danish": "goddag",
+    "article": null,
+    "english": "good day",
+    "pos": "intj",
+    "glosses": [
+     "good day"
+    ],
+    "ipa": "/ɡoˈdaːˀɣ/",
+    "compound_parts": [
+     "god",
+     "dag"
+    ]
+   },
+   "context": {
+    "danish": "___. Hvad ønsker du?",
+    "english": "Good day. What do you want?",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/goddag#Danish"
+    },
+    {
+     "name": "Tatoeba #2530398",
+     "url": "https://tatoeba.org/en/sentences/show/2530398"
+    },
+    {
+     "name": "Tatoeba #2310291",
+     "url": "https://tatoeba.org/en/sentences/show/2310291"
+    }
+   ]
+  },
+  {
+   "card_id": 7,
+   "card_type": "recognition",
+   "topic": "greetings",
+   "unlocked_by": null,
+   "expected": "Godaften",
+   "full_sentence": "Godaften, skat!",
+   "hint": null,
+   "word": {
+    "danish": "godaften",
+    "article": null,
+    "english": "good evening",
+    "pos": "intj",
+    "glosses": [
+     "good evening"
+    ],
+    "ipa": "/ɡoˈɑftən/",
+    "compound_parts": [
+     "god",
+     "aften"
+    ]
+   },
+   "context": {
+    "danish": "Godaften, skat!",
+    "english": "Good evening, darling!",
+    "target_form": "Godaften"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/godaften#Danish"
+    },
+    {
+     "name": "Tatoeba #8770783",
+     "url": "https://tatoeba.org/en/sentences/show/8770783"
+    },
+    {
+     "name": "Tatoeba #6586698",
+     "url": "https://tatoeba.org/en/sentences/show/6586698"
+    }
+   ]
+  },
+  {
+   "card_id": 8,
+   "card_type": "cloze",
+   "topic": "greetings",
+   "unlocked_by": 7,
+   "expected": "Godaften",
+   "full_sentence": "Godaften, skat!",
+   "hint": null,
+   "word": {
+    "danish": "godaften",
+    "article": null,
+    "english": "good evening",
+    "pos": "intj",
+    "glosses": [
+     "good evening"
+    ],
+    "ipa": "/ɡoˈɑftən/",
+    "compound_parts": [
+     "god",
+     "aften"
+    ]
+   },
+   "context": {
+    "danish": "___, skat!",
+    "english": "Good evening, darling!",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/godaften#Danish"
+    },
+    {
+     "name": "Tatoeba #8770783",
+     "url": "https://tatoeba.org/en/sentences/show/8770783"
+    },
+    {
+     "name": "Tatoeba #6586698",
+     "url": "https://tatoeba.org/en/sentences/show/6586698"
+    }
+   ]
+  },
+  {
+   "card_id": 9,
+   "card_type": "recognition",
+   "topic": "greetings",
+   "unlocked_by": null,
+   "expected": "Godnat",
+   "full_sentence": "Godnat, Tom.",
+   "hint": null,
+   "word": {
+    "danish": "godnat",
+    "article": null,
+    "english": "good night",
+    "pos": "intj",
+    "glosses": [
+     "good night"
+    ],
+    "ipa": "/ɡoˈnat/",
+    "compound_parts": [
+     "god",
+     "nat"
+    ]
+   },
+   "context": {
+    "danish": "Godnat, Tom.",
+    "english": "Good night, Tom.",
+    "target_form": "Godnat"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/godnat#Danish"
+    },
+    {
+     "name": "Tatoeba #10698697",
+     "url": "https://tatoeba.org/en/sentences/show/10698697"
+    },
+    {
+     "name": "Tatoeba #2649029",
+     "url": "https://tatoeba.org/en/sentences/show/2649029"
+    }
+   ]
+  },
+  {
+   "card_id": 10,
+   "card_type": "cloze",
+   "topic": "greetings",
+   "unlocked_by": 9,
+   "expected": "Godnat",
+   "full_sentence": "Godnat, Tom.",
+   "hint": null,
+   "word": {
+    "danish": "godnat",
+    "article": null,
+    "english": "good night",
+    "pos": "intj",
+    "glosses": [
+     "good night"
+    ],
+    "ipa": "/ɡoˈnat/",
+    "compound_parts": [
+     "god",
+     "nat"
+    ]
+   },
+   "context": {
+    "danish": "___, Tom.",
+    "english": "Good night, Tom.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/godnat#Danish"
+    },
+    {
+     "name": "Tatoeba #10698697",
+     "url": "https://tatoeba.org/en/sentences/show/10698697"
+    },
+    {
+     "name": "Tatoeba #2649029",
+     "url": "https://tatoeba.org/en/sentences/show/2649029"
+    }
+   ]
+  },
+  {
+   "card_id": 11,
+   "card_type": "recognition",
+   "topic": "greetings",
+   "unlocked_by": null,
+   "expected": "farvel",
+   "full_sentence": "Tom kyssede Mary farvel.",
+   "hint": null,
+   "word": {
+    "danish": "farvel",
+    "article": null,
+    "english": "goodbye, farewell",
+    "pos": "intj",
+    "glosses": [
+     "goodbye, farewell"
+    ],
+    "ipa": "/fɑːˈvɛl/",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Tom kyssede Mary farvel.",
+    "english": "Tom kissed Mary goodbye.",
+    "target_form": "farvel"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/farvel#Danish"
+    },
+    {
+     "name": "Tatoeba #2472271",
+     "url": "https://tatoeba.org/en/sentences/show/2472271"
+    },
+    {
+     "name": "Tatoeba #2471443",
+     "url": "https://tatoeba.org/en/sentences/show/2471443"
+    }
+   ]
+  },
+  {
+   "card_id": 12,
+   "card_type": "cloze",
+   "topic": "greetings",
+   "unlocked_by": 11,
+   "expected": "farvel",
+   "full_sentence": "Tom kyssede Mary farvel.",
+   "hint": null,
+   "word": {
+    "danish": "farvel",
+    "article": null,
+    "english": "goodbye, farewell",
+    "pos": "intj",
+    "glosses": [
+     "goodbye, farewell"
+    ],
+    "ipa": "/fɑːˈvɛl/",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Tom kyssede Mary ___.",
+    "english": "Tom kissed Mary goodbye.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/farvel#Danish"
+    },
+    {
+     "name": "Tatoeba #2472271",
+     "url": "https://tatoeba.org/en/sentences/show/2472271"
+    },
+    {
+     "name": "Tatoeba #2471443",
+     "url": "https://tatoeba.org/en/sentences/show/2471443"
+    }
+   ]
+  },
+  {
+   "card_id": 13,
+   "card_type": "recognition",
+   "topic": "greetings",
+   "unlocked_by": null,
+   "expected": "Vi ses",
+   "full_sentence": "Vi ses.",
+   "hint": null,
+   "word": {
+    "danish": "vi ses",
+    "article": null,
+    "english": "see you",
+    "pos": "intj",
+    "glosses": [
+     "see you"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Vi ses.",
+    "english": "See you.",
+    "target_form": "Vi ses"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/vi_ses#Danish"
+    },
+    {
+     "name": "Tatoeba #3802196",
+     "url": "https://tatoeba.org/en/sentences/show/3802196"
+    },
+    {
+     "name": "Tatoeba #1151432",
+     "url": "https://tatoeba.org/en/sentences/show/1151432"
+    }
+   ]
+  },
+  {
+   "card_id": 14,
+   "card_type": "cloze",
+   "topic": "greetings",
+   "unlocked_by": 13,
+   "expected": "Vi ses",
+   "full_sentence": "Vi ses.",
+   "hint": "V_ s__",
+   "word": {
+    "danish": "vi ses",
+    "article": null,
+    "english": "see you",
+    "pos": "intj",
+    "glosses": [
+     "see you"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___.",
+    "english": "See you.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/vi_ses#Danish"
+    },
+    {
+     "name": "Tatoeba #3802196",
+     "url": "https://tatoeba.org/en/sentences/show/3802196"
+    },
+    {
+     "name": "Tatoeba #1151432",
+     "url": "https://tatoeba.org/en/sentences/show/1151432"
+    }
+   ]
+  },
+  {
+   "card_id": 15,
+   "card_type": "recognition",
+   "topic": "greetings",
+   "unlocked_by": null,
+   "expected": "Hvad så",
+   "full_sentence": "Hvad så?",
+   "hint": null,
+   "word": {
+    "danish": "hvad så",
+    "article": null,
+    "english": "what's up",
+    "pos": "phrase",
+    "glosses": [
+     "what's up"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Hvad så?",
+    "english": "So what?",
+    "target_form": "Hvad så"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvad_s%C3%A5#Danish"
+    },
+    {
+     "name": "Tatoeba #619004",
+     "url": "https://tatoeba.org/en/sentences/show/619004"
+    },
+    {
+     "name": "Tatoeba #1340",
+     "url": "https://tatoeba.org/en/sentences/show/1340"
+    }
+   ]
+  },
+  {
+   "card_id": 16,
+   "card_type": "cloze",
+   "topic": "greetings",
+   "unlocked_by": 15,
+   "expected": "Hvad så",
+   "full_sentence": "Hvad så?",
+   "hint": "H___ s_",
+   "word": {
+    "danish": "hvad så",
+    "article": null,
+    "english": "what's up",
+    "pos": "phrase",
+    "glosses": [
+     "what's up"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___?",
+    "english": "So what?",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvad_s%C3%A5#Danish"
+    },
+    {
+     "name": "Tatoeba #619004",
+     "url": "https://tatoeba.org/en/sentences/show/619004"
+    },
+    {
+     "name": "Tatoeba #1340",
+     "url": "https://tatoeba.org/en/sentences/show/1340"
+    }
+   ]
+  },
+  {
+   "card_id": 17,
+   "card_type": "recognition",
+   "topic": "greetings",
+   "unlocked_by": null,
+   "expected": "Hvordan har du det",
+   "full_sentence": "Hvordan har du det?",
+   "hint": null,
+   "word": {
+    "danish": "hvordan har du det",
+    "article": null,
+    "english": "how are you?, how are you doing?",
+    "pos": "phrase",
+    "glosses": [
+     "how are you?, how are you doing?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Hvordan har du det?",
+    "english": "How are you doing?",
+    "target_form": "Hvordan har du det"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvordan_har_du_det#Danish"
+    },
+    {
+     "name": "Tatoeba #400931",
+     "url": "https://tatoeba.org/en/sentences/show/400931"
+    },
+    {
+     "name": "Tatoeba #38926",
+     "url": "https://tatoeba.org/en/sentences/show/38926"
+    }
+   ]
+  },
+  {
+   "card_id": 18,
+   "card_type": "cloze",
+   "topic": "greetings",
+   "unlocked_by": 17,
+   "expected": "Hvordan har du det",
+   "full_sentence": "Hvordan har du det?",
+   "hint": "H______ h__ d_ d__",
+   "word": {
+    "danish": "hvordan har du det",
+    "article": null,
+    "english": "how are you?, how are you doing?",
+    "pos": "phrase",
+    "glosses": [
+     "how are you?, how are you doing?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___?",
+    "english": "How are you doing?",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvordan_har_du_det#Danish"
+    },
+    {
+     "name": "Tatoeba #400931",
+     "url": "https://tatoeba.org/en/sentences/show/400931"
+    },
+    {
+     "name": "Tatoeba #38926",
+     "url": "https://tatoeba.org/en/sentences/show/38926"
+    }
+   ]
+  },
+  {
+   "card_id": 19,
+   "card_type": "recognition",
+   "topic": "greetings",
+   "unlocked_by": null,
+   "expected": "Hvordan går det",
+   "full_sentence": "Hvordan går det?",
+   "hint": null,
+   "word": {
+    "danish": "hvordan går det",
+    "article": null,
+    "english": "how are you? / how's it going?",
+    "pos": "phrase",
+    "glosses": [
+     "how are you?",
+     "how's it going?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Hvordan går det?",
+    "english": "How are you doing?",
+    "target_form": "Hvordan går det"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvordan_g%C3%A5r_det#Danish"
+    },
+    {
+     "name": "Tatoeba #481760",
+     "url": "https://tatoeba.org/en/sentences/show/481760"
+    },
+    {
+     "name": "Tatoeba #38926",
+     "url": "https://tatoeba.org/en/sentences/show/38926"
+    }
+   ]
+  },
+  {
+   "card_id": 20,
+   "card_type": "cloze",
+   "topic": "greetings",
+   "unlocked_by": 19,
+   "expected": "Hvordan går det",
+   "full_sentence": "Hvordan går det?",
+   "hint": "H______ g__ d__",
+   "word": {
+    "danish": "hvordan går det",
+    "article": null,
+    "english": "how are you? / how's it going?",
+    "pos": "phrase",
+    "glosses": [
+     "how are you?",
+     "how's it going?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___?",
+    "english": "How are you doing?",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvordan_g%C3%A5r_det#Danish"
+    },
+    {
+     "name": "Tatoeba #481760",
+     "url": "https://tatoeba.org/en/sentences/show/481760"
+    },
+    {
+     "name": "Tatoeba #38926",
+     "url": "https://tatoeba.org/en/sentences/show/38926"
+    }
+   ]
+  },
+  {
+   "card_id": 21,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "Mange tak",
+   "full_sentence": "Mange tak.",
+   "hint": null,
+   "word": {
+    "danish": "mange tak",
+    "article": null,
+    "english": "thank you very much, thanks a lot",
+    "pos": "intj",
+    "glosses": [
+     "thank you very much, thanks a lot"
+    ],
+    "ipa": "/manɡə tak/",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Mange tak.",
+    "english": "Thanks!",
+    "target_form": "Mange tak"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/mange_tak#Danish"
+    },
+    {
+     "name": "Tatoeba #1876520",
+     "url": "https://tatoeba.org/en/sentences/show/1876520"
+    },
+    {
+     "name": "Tatoeba #448645",
+     "url": "https://tatoeba.org/en/sentences/show/448645"
+    }
+   ]
+  },
+  {
+   "card_id": 22,
+   "card_type": "cloze",
+   "topic": "politeness",
+   "unlocked_by": 21,
+   "expected": "Mange tak",
+   "full_sentence": "Mange tak.",
+   "hint": "M____ t__",
+   "word": {
+    "danish": "mange tak",
+    "article": null,
+    "english": "thank you very much, thanks a lot",
+    "pos": "intj",
+    "glosses": [
+     "thank you very much, thanks a lot"
+    ],
+    "ipa": "/manɡə tak/",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___.",
+    "english": "Thanks!",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/mange_tak#Danish"
+    },
+    {
+     "name": "Tatoeba #1876520",
+     "url": "https://tatoeba.org/en/sentences/show/1876520"
+    },
+    {
+     "name": "Tatoeba #448645",
+     "url": "https://tatoeba.org/en/sentences/show/448645"
+    }
+   ]
+  },
+  {
+   "card_id": 23,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "Tusind tak",
+   "full_sentence": "Tusind tak!",
+   "hint": null,
+   "word": {
+    "danish": "tusind tak",
+    "article": null,
+    "english": "thanks a million, thank you very much",
+    "pos": "phrase",
+    "glosses": [
+     "thanks a million, thank you very much"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Tusind tak!",
+    "english": "Thank you so much!",
+    "target_form": "Tusind tak"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/tusind_tak#Danish"
+    },
+    {
+     "name": "Tatoeba #2466749",
+     "url": "https://tatoeba.org/en/sentences/show/2466749"
+    },
+    {
+     "name": "Tatoeba #2456812",
+     "url": "https://tatoeba.org/en/sentences/show/2456812"
+    }
+   ]
+  },
+  {
+   "card_id": 24,
+   "card_type": "cloze",
+   "topic": "politeness",
+   "unlocked_by": 23,
+   "expected": "Tusind tak",
+   "full_sentence": "Tusind tak!",
+   "hint": "T_____ t__",
+   "word": {
+    "danish": "tusind tak",
+    "article": null,
+    "english": "thanks a million, thank you very much",
+    "pos": "phrase",
+    "glosses": [
+     "thanks a million, thank you very much"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___!",
+    "english": "Thank you so much!",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/tusind_tak#Danish"
+    },
+    {
+     "name": "Tatoeba #2466749",
+     "url": "https://tatoeba.org/en/sentences/show/2466749"
+    },
+    {
+     "name": "Tatoeba #2456812",
+     "url": "https://tatoeba.org/en/sentences/show/2456812"
+    }
+   ]
+  },
+  {
+   "card_id": 25,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "nej tak",
+   "full_sentence": "Nej, tak.",
+   "hint": null,
+   "word": {
+    "danish": "nej tak",
+    "article": null,
+    "english": "no thank you",
+    "pos": "intj",
+    "glosses": [
+     "no thank you"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Nej, tak.",
+    "english": "No, thank you.",
+    "target_form": "nej tak"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/nej_tak#Danish"
+    },
+    {
+     "name": "Tatoeba #13794556",
+     "url": "https://tatoeba.org/en/sentences/show/13794556"
+    },
+    {
+     "name": "Tatoeba #31390",
+     "url": "https://tatoeba.org/en/sentences/show/31390"
+    }
+   ]
+  },
+  {
+   "card_id": 26,
+   "card_type": "recall",
+   "topic": "politeness",
+   "unlocked_by": 25,
+   "expected": "nej tak",
+   "full_sentence": null,
+   "hint": "n__ t__",
+   "word": {
+    "danish": "nej tak",
+    "article": null,
+    "english": "no thank you",
+    "pos": "intj",
+    "glosses": [
+     "no thank you"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/nej_tak#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 27,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "Selv tak",
+   "full_sentence": "Selv tak.",
+   "hint": null,
+   "word": {
+    "danish": "selv tak",
+    "article": null,
+    "english": "thank you as well",
+    "pos": "intj",
+    "glosses": [
+     "thank you as well"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Selv tak.",
+    "english": "It was nothing.",
+    "target_form": "Selv tak"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/selv_tak#Danish"
+    },
+    {
+     "name": "Tatoeba #1958761",
+     "url": "https://tatoeba.org/en/sentences/show/1958761"
+    },
+    {
+     "name": "Tatoeba #24972",
+     "url": "https://tatoeba.org/en/sentences/show/24972"
+    }
+   ]
+  },
+  {
+   "card_id": 28,
+   "card_type": "cloze",
+   "topic": "politeness",
+   "unlocked_by": 27,
+   "expected": "Selv tak",
+   "full_sentence": "Selv tak.",
+   "hint": "S___ t__",
+   "word": {
+    "danish": "selv tak",
+    "article": null,
+    "english": "thank you as well",
+    "pos": "intj",
+    "glosses": [
+     "thank you as well"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___.",
+    "english": "It was nothing.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/selv_tak#Danish"
+    },
+    {
+     "name": "Tatoeba #1958761",
+     "url": "https://tatoeba.org/en/sentences/show/1958761"
+    },
+    {
+     "name": "Tatoeba #24972",
+     "url": "https://tatoeba.org/en/sentences/show/24972"
+    }
+   ]
+  },
+  {
+   "card_id": 29,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "Det var så lidt",
+   "full_sentence": "Det var så lidt.",
+   "hint": null,
+   "word": {
+    "danish": "det var så lidt",
+    "article": null,
+    "english": "you’re welcome / not at all",
+    "pos": "intj",
+    "glosses": [
+     "you’re welcome",
+     "not at all",
+     "don’t mention it"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Det var så lidt.",
+    "english": "You're welcome.",
+    "target_form": "Det var så lidt"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/det_var_s%C3%A5_lidt#Danish"
+    },
+    {
+     "name": "Tatoeba #3589627",
+     "url": "https://tatoeba.org/en/sentences/show/3589627"
+    },
+    {
+     "name": "Tatoeba #403068",
+     "url": "https://tatoeba.org/en/sentences/show/403068"
+    }
+   ]
+  },
+  {
+   "card_id": 30,
+   "card_type": "cloze",
+   "topic": "politeness",
+   "unlocked_by": 29,
+   "expected": "Det var så lidt",
+   "full_sentence": "Det var så lidt.",
+   "hint": "D__ v__ s_ l___",
+   "word": {
+    "danish": "det var så lidt",
+    "article": null,
+    "english": "you’re welcome / not at all",
+    "pos": "intj",
+    "glosses": [
+     "you’re welcome",
+     "not at all",
+     "don’t mention it"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___.",
+    "english": "You're welcome.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/det_var_s%C3%A5_lidt#Danish"
+    },
+    {
+     "name": "Tatoeba #3589627",
+     "url": "https://tatoeba.org/en/sentences/show/3589627"
+    },
+    {
+     "name": "Tatoeba #403068",
+     "url": "https://tatoeba.org/en/sentences/show/403068"
+    }
+   ]
+  },
+  {
+   "card_id": 31,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "Undskyld",
+   "full_sentence": "Okay. Undskyld.",
+   "hint": null,
+   "word": {
+    "danish": "undskyld",
+    "article": null,
+    "english": "sorry / excuse me",
+    "pos": "intj",
+    "glosses": [
+     "sorry",
+     "excuse me",
+     "pardon"
+    ],
+    "ipa": "/ˈonˌsɡylˀ/",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Okay. Undskyld.",
+    "english": "Okay. Sorry.",
+    "target_form": "Undskyld"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/undskyld#Danish"
+    },
+    {
+     "name": "Tatoeba #2602983",
+     "url": "https://tatoeba.org/en/sentences/show/2602983"
+    },
+    {
+     "name": "Tatoeba #28610",
+     "url": "https://tatoeba.org/en/sentences/show/28610"
+    }
+   ]
+  },
+  {
+   "card_id": 32,
+   "card_type": "cloze",
+   "topic": "politeness",
+   "unlocked_by": 31,
+   "expected": "Undskyld",
+   "full_sentence": "Okay. Undskyld.",
+   "hint": null,
+   "word": {
+    "danish": "undskyld",
+    "article": null,
+    "english": "sorry / excuse me",
+    "pos": "intj",
+    "glosses": [
+     "sorry",
+     "excuse me",
+     "pardon"
+    ],
+    "ipa": "/ˈonˌsɡylˀ/",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Okay. ___.",
+    "english": "Okay. Sorry.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/undskyld#Danish"
+    },
+    {
+     "name": "Tatoeba #2602983",
+     "url": "https://tatoeba.org/en/sentences/show/2602983"
+    },
+    {
+     "name": "Tatoeba #28610",
+     "url": "https://tatoeba.org/en/sentences/show/28610"
+    }
+   ]
+  },
+  {
+   "card_id": 33,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "i lige måde",
+   "full_sentence": "Tak i lige måde.",
+   "hint": null,
+   "word": {
+    "danish": "i lige måde",
+    "article": null,
+    "english": "the same to you; to you too",
+    "pos": "phrase",
+    "glosses": [
+     "the same to you; to you too"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Tak i lige måde.",
+    "english": "Thank you, too.",
+    "target_form": "i lige måde"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/i_lige_m%C3%A5de#Danish"
+    },
+    {
+     "name": "Tatoeba #4955457",
+     "url": "https://tatoeba.org/en/sentences/show/4955457"
+    },
+    {
+     "name": "Tatoeba #3775038",
+     "url": "https://tatoeba.org/en/sentences/show/3775038"
+    }
+   ]
+  },
+  {
+   "card_id": 34,
+   "card_type": "cloze",
+   "topic": "politeness",
+   "unlocked_by": 33,
+   "expected": "i lige måde",
+   "full_sentence": "Tak i lige måde.",
+   "hint": "i l___ m___",
+   "word": {
+    "danish": "i lige måde",
+    "article": null,
+    "english": "the same to you; to you too",
+    "pos": "phrase",
+    "glosses": [
+     "the same to you; to you too"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Tak ___.",
+    "english": "Thank you, too.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/i_lige_m%C3%A5de#Danish"
+    },
+    {
+     "name": "Tatoeba #4955457",
+     "url": "https://tatoeba.org/en/sentences/show/4955457"
+    },
+    {
+     "name": "Tatoeba #3775038",
+     "url": "https://tatoeba.org/en/sentences/show/3775038"
+    }
+   ]
+  },
+  {
+   "card_id": 35,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "velbekomme",
+   "full_sentence": null,
+   "hint": null,
+   "word": {
+    "danish": "velbekomme",
+    "article": null,
+    "english": "bon appétit / you're welcome",
+    "pos": "intj",
+    "glosses": [
+     "bon appétit",
+     "you're welcome",
+     "may it do you good"
+    ],
+    "ipa": null,
+    "compound_parts": [
+     "vel",
+     "bekomme"
+    ]
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/velbekomme#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 36,
+   "card_type": "recall",
+   "topic": "politeness",
+   "unlocked_by": 35,
+   "expected": "velbekomme",
+   "full_sentence": null,
+   "hint": null,
+   "word": {
+    "danish": "velbekomme",
+    "article": null,
+    "english": "bon appétit / you're welcome",
+    "pos": "intj",
+    "glosses": [
+     "bon appétit",
+     "you're welcome",
+     "may it do you good"
+    ],
+    "ipa": null,
+    "compound_parts": [
+     "vel",
+     "bekomme"
+    ]
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/velbekomme#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 37,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "tak for mad",
+   "full_sentence": null,
+   "hint": null,
+   "word": {
+    "danish": "tak for mad",
+    "article": null,
+    "english": "thanks for food",
+    "pos": "intj",
+    "glosses": [
+     "thanks for food"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/tak_for_mad#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 38,
+   "card_type": "recall",
+   "topic": "politeness",
+   "unlocked_by": 37,
+   "expected": "tak for mad",
+   "full_sentence": null,
+   "hint": "t__ f__ m__",
+   "word": {
+    "danish": "tak for mad",
+    "article": null,
+    "english": "thanks for food",
+    "pos": "intj",
+    "glosses": [
+     "thanks for food"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/tak_for_mad#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 39,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "skål",
+   "full_sentence": null,
+   "hint": null,
+   "word": {
+    "danish": "skål",
+    "article": null,
+    "english": "cheers!",
+    "pos": "intj",
+    "glosses": [
+     "cheers!"
+    ],
+    "ipa": "/ˈskɔːl/",
+    "compound_parts": []
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/sk%C3%A5l#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 40,
+   "card_type": "recall",
+   "topic": "politeness",
+   "unlocked_by": 39,
+   "expected": "skål",
+   "full_sentence": null,
+   "hint": null,
+   "word": {
+    "danish": "skål",
+    "article": null,
+    "english": "cheers!",
+    "pos": "intj",
+    "glosses": [
+     "cheers!"
+    ],
+    "ipa": "/ˈskɔːl/",
+    "compound_parts": []
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/sk%C3%A5l#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 41,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "Tillykke",
+   "full_sentence": "Tillykke med dit nye arbejde.",
+   "hint": null,
+   "word": {
+    "danish": "tillykke",
+    "article": null,
+    "english": "congratulations",
+    "pos": "intj",
+    "glosses": [
+     "congratulations"
+    ],
+    "ipa": "[tˢeˈløɡ̊ə]",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Tillykke med dit nye arbejde.",
+    "english": "Congratulations on your new job.",
+    "target_form": "Tillykke"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/tillykke#Danish"
+    },
+    {
+     "name": "Tatoeba #4030586",
+     "url": "https://tatoeba.org/en/sentences/show/4030586"
+    },
+    {
+     "name": "Tatoeba #3264747",
+     "url": "https://tatoeba.org/en/sentences/show/3264747"
+    }
+   ]
+  },
+  {
+   "card_id": 42,
+   "card_type": "cloze",
+   "topic": "politeness",
+   "unlocked_by": 41,
+   "expected": "Tillykke",
+   "full_sentence": "Tillykke med dit nye arbejde.",
+   "hint": null,
+   "word": {
+    "danish": "tillykke",
+    "article": null,
+    "english": "congratulations",
+    "pos": "intj",
+    "glosses": [
+     "congratulations"
+    ],
+    "ipa": "[tˢeˈløɡ̊ə]",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___ med dit nye arbejde.",
+    "english": "Congratulations on your new job.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/tillykke#Danish"
+    },
+    {
+     "name": "Tatoeba #4030586",
+     "url": "https://tatoeba.org/en/sentences/show/4030586"
+    },
+    {
+     "name": "Tatoeba #3264747",
+     "url": "https://tatoeba.org/en/sentences/show/3264747"
+    }
+   ]
+  },
+  {
+   "card_id": 43,
+   "card_type": "recognition",
+   "topic": "politeness",
+   "unlocked_by": null,
+   "expected": "god bedring",
+   "full_sentence": null,
+   "hint": null,
+   "word": {
+    "danish": "god bedring",
+    "article": null,
+    "english": "get well soon",
+    "pos": "phrase",
+    "glosses": [
+     "get well soon"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/god_bedring#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 44,
+   "card_type": "recall",
+   "topic": "politeness",
+   "unlocked_by": 43,
+   "expected": "god bedring",
+   "full_sentence": null,
+   "hint": "g__ b______",
+   "word": {
+    "danish": "god bedring",
+    "article": null,
+    "english": "get well soon",
+    "pos": "phrase",
+    "glosses": [
+     "get well soon"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/god_bedring#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 45,
+   "card_type": "recognition",
+   "topic": "conversation",
+   "unlocked_by": null,
+   "expected": "Jeg forstår ikke",
+   "full_sentence": "Jeg forstår ikke.",
+   "hint": null,
+   "word": {
+    "danish": "jeg forstår ikke",
+    "article": null,
+    "english": "I don't understand",
+    "pos": "phrase",
+    "glosses": [
+     "I don't understand"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Jeg forstår ikke.",
+    "english": "I do not understand.",
+    "target_form": "Jeg forstår ikke"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/jeg_forst%C3%A5r_ikke#Danish"
+    },
+    {
+     "name": "Tatoeba #606659",
+     "url": "https://tatoeba.org/en/sentences/show/606659"
+    },
+    {
+     "name": "Tatoeba #376610",
+     "url": "https://tatoeba.org/en/sentences/show/376610"
+    }
+   ]
+  },
+  {
+   "card_id": 46,
+   "card_type": "cloze",
+   "topic": "conversation",
+   "unlocked_by": 45,
+   "expected": "Jeg forstår ikke",
+   "full_sentence": "Jeg forstår ikke.",
+   "hint": "J__ f______ i___",
+   "word": {
+    "danish": "jeg forstår ikke",
+    "article": null,
+    "english": "I don't understand",
+    "pos": "phrase",
+    "glosses": [
+     "I don't understand"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___.",
+    "english": "I do not understand.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/jeg_forst%C3%A5r_ikke#Danish"
+    },
+    {
+     "name": "Tatoeba #606659",
+     "url": "https://tatoeba.org/en/sentences/show/606659"
+    },
+    {
+     "name": "Tatoeba #376610",
+     "url": "https://tatoeba.org/en/sentences/show/376610"
+    }
+   ]
+  },
+  {
+   "card_id": 47,
+   "card_type": "recognition",
+   "topic": "conversation",
+   "unlocked_by": null,
+   "expected": "Jeg ved det ikke",
+   "full_sentence": "Jeg ved det ikke.",
+   "hint": null,
+   "word": {
+    "danish": "jeg ved det ikke",
+    "article": null,
+    "english": "I don't know",
+    "pos": "phrase",
+    "glosses": [
+     "I don't know"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Jeg ved det ikke.",
+    "english": "I don't know.",
+    "target_form": "Jeg ved det ikke"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/jeg_ved_det_ikke#Danish"
+    },
+    {
+     "name": "Tatoeba #1129125",
+     "url": "https://tatoeba.org/en/sentences/show/1129125"
+    },
+    {
+     "name": "Tatoeba #349064",
+     "url": "https://tatoeba.org/en/sentences/show/349064"
+    }
+   ]
+  },
+  {
+   "card_id": 48,
+   "card_type": "cloze",
+   "topic": "conversation",
+   "unlocked_by": 47,
+   "expected": "Jeg ved det ikke",
+   "full_sentence": "Jeg ved det ikke.",
+   "hint": "J__ v__ d__ i___",
+   "word": {
+    "danish": "jeg ved det ikke",
+    "article": null,
+    "english": "I don't know",
+    "pos": "phrase",
+    "glosses": [
+     "I don't know"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___.",
+    "english": "I don't know.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/jeg_ved_det_ikke#Danish"
+    },
+    {
+     "name": "Tatoeba #1129125",
+     "url": "https://tatoeba.org/en/sentences/show/1129125"
+    },
+    {
+     "name": "Tatoeba #349064",
+     "url": "https://tatoeba.org/en/sentences/show/349064"
+    }
+   ]
+  },
+  {
+   "card_id": 49,
+   "card_type": "recognition",
+   "topic": "conversation",
+   "unlocked_by": null,
+   "expected": "Taler du engelsk",
+   "full_sentence": "Taler du engelsk?",
+   "hint": null,
+   "word": {
+    "danish": "taler du engelsk",
+    "article": null,
+    "english": "do you speak English?",
+    "pos": "phrase",
+    "glosses": [
+     "do you speak English?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Taler du engelsk?",
+    "english": "Do you speak English?",
+    "target_form": "Taler du engelsk"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/taler_du_engelsk#Danish"
+    },
+    {
+     "name": "Tatoeba #615849",
+     "url": "https://tatoeba.org/en/sentences/show/615849"
+    },
+    {
+     "name": "Tatoeba #378270",
+     "url": "https://tatoeba.org/en/sentences/show/378270"
+    }
+   ]
+  },
+  {
+   "card_id": 50,
+   "card_type": "cloze",
+   "topic": "conversation",
+   "unlocked_by": 49,
+   "expected": "Taler du engelsk",
+   "full_sentence": "Taler du engelsk?",
+   "hint": "T____ d_ e______",
+   "word": {
+    "danish": "taler du engelsk",
+    "article": null,
+    "english": "do you speak English?",
+    "pos": "phrase",
+    "glosses": [
+     "do you speak English?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___?",
+    "english": "Do you speak English?",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/taler_du_engelsk#Danish"
+    },
+    {
+     "name": "Tatoeba #615849",
+     "url": "https://tatoeba.org/en/sentences/show/615849"
+    },
+    {
+     "name": "Tatoeba #378270",
+     "url": "https://tatoeba.org/en/sentences/show/378270"
+    }
+   ]
+  },
+  {
+   "card_id": 51,
+   "card_type": "recognition",
+   "topic": "conversation",
+   "unlocked_by": null,
+   "expected": "taler du dansk",
+   "full_sentence": null,
+   "hint": null,
+   "word": {
+    "danish": "taler du dansk",
+    "article": null,
+    "english": "do you speak Danish?",
+    "pos": "phrase",
+    "glosses": [
+     "do you speak Danish?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/taler_du_dansk#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 52,
+   "card_type": "recall",
+   "topic": "conversation",
+   "unlocked_by": 51,
+   "expected": "taler du dansk",
+   "full_sentence": null,
+   "hint": "t____ d_ d____",
+   "word": {
+    "danish": "taler du dansk",
+    "article": null,
+    "english": "do you speak Danish?",
+    "pos": "phrase",
+    "glosses": [
+     "do you speak Danish?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": null,
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/taler_du_dansk#Danish"
+    }
+   ]
+  },
+  {
+   "card_id": 53,
+   "card_type": "recognition",
+   "topic": "conversation",
+   "unlocked_by": null,
+   "expected": "Hvad hedder du",
+   "full_sentence": "Hvad hedder du?",
+   "hint": null,
+   "word": {
+    "danish": "hvad hedder du",
+    "article": null,
+    "english": "what is your name?",
+    "pos": "phrase",
+    "glosses": [
+     "what is your name?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Hvad hedder du?",
+    "english": "What is your name?",
+    "target_form": "Hvad hedder du"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvad_hedder_du#Danish"
+    },
+    {
+     "name": "Tatoeba #628420",
+     "url": "https://tatoeba.org/en/sentences/show/628420"
+    },
+    {
+     "name": "Tatoeba #70623",
+     "url": "https://tatoeba.org/en/sentences/show/70623"
+    }
+   ]
+  },
+  {
+   "card_id": 54,
+   "card_type": "cloze",
+   "topic": "conversation",
+   "unlocked_by": 53,
+   "expected": "Hvad hedder du",
+   "full_sentence": "Hvad hedder du?",
+   "hint": "H___ h_____ d_",
+   "word": {
+    "danish": "hvad hedder du",
+    "article": null,
+    "english": "what is your name?",
+    "pos": "phrase",
+    "glosses": [
+     "what is your name?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___?",
+    "english": "What is your name?",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvad_hedder_du#Danish"
+    },
+    {
+     "name": "Tatoeba #628420",
+     "url": "https://tatoeba.org/en/sentences/show/628420"
+    },
+    {
+     "name": "Tatoeba #70623",
+     "url": "https://tatoeba.org/en/sentences/show/70623"
+    }
+   ]
+  },
+  {
+   "card_id": 55,
+   "card_type": "recognition",
+   "topic": "conversation",
+   "unlocked_by": null,
+   "expected": "Jeg hedder",
+   "full_sentence": "Jeg hedder Tom.",
+   "hint": null,
+   "word": {
+    "danish": "jeg hedder",
+    "article": null,
+    "english": "my name is…",
+    "pos": "phrase",
+    "glosses": [
+     "my name is…"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Jeg hedder Tom.",
+    "english": "My name is Tom.",
+    "target_form": "Jeg hedder"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/jeg_hedder#Danish"
+    },
+    {
+     "name": "Tatoeba #10257308",
+     "url": "https://tatoeba.org/en/sentences/show/10257308"
+    },
+    {
+     "name": "Tatoeba #1173265",
+     "url": "https://tatoeba.org/en/sentences/show/1173265"
+    }
+   ]
+  },
+  {
+   "card_id": 56,
+   "card_type": "cloze",
+   "topic": "conversation",
+   "unlocked_by": 55,
+   "expected": "Jeg hedder",
+   "full_sentence": "Jeg hedder Tom.",
+   "hint": "J__ h_____",
+   "word": {
+    "danish": "jeg hedder",
+    "article": null,
+    "english": "my name is…",
+    "pos": "phrase",
+    "glosses": [
+     "my name is…"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___ Tom.",
+    "english": "My name is Tom.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/jeg_hedder#Danish"
+    },
+    {
+     "name": "Tatoeba #10257308",
+     "url": "https://tatoeba.org/en/sentences/show/10257308"
+    },
+    {
+     "name": "Tatoeba #1173265",
+     "url": "https://tatoeba.org/en/sentences/show/1173265"
+    }
+   ]
+  },
+  {
+   "card_id": 57,
+   "card_type": "recognition",
+   "topic": "conversation",
+   "unlocked_by": null,
+   "expected": "ikke sandt",
+   "full_sentence": "Nej, det er ikke sandt!",
+   "hint": null,
+   "word": {
+    "danish": "ikke sandt",
+    "article": null,
+    "english": "right?, isn't it so?, no?",
+    "pos": "phrase",
+    "glosses": [
+     "right?, isn't it so?, no?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Nej, det er ikke sandt!",
+    "english": "No, that's not true!",
+    "target_form": "ikke sandt"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/ikke_sandt#Danish"
+    },
+    {
+     "name": "Tatoeba #10693711",
+     "url": "https://tatoeba.org/en/sentences/show/10693711"
+    },
+    {
+     "name": "Tatoeba #9398472",
+     "url": "https://tatoeba.org/en/sentences/show/9398472"
+    }
+   ]
+  },
+  {
+   "card_id": 58,
+   "card_type": "cloze",
+   "topic": "conversation",
+   "unlocked_by": 57,
+   "expected": "ikke sandt",
+   "full_sentence": "Nej, det er ikke sandt!",
+   "hint": "i___ s____",
+   "word": {
+    "danish": "ikke sandt",
+    "article": null,
+    "english": "right?, isn't it so?, no?",
+    "pos": "phrase",
+    "glosses": [
+     "right?, isn't it so?, no?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Nej, det er ___!",
+    "english": "No, that's not true!",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/ikke_sandt#Danish"
+    },
+    {
+     "name": "Tatoeba #10693711",
+     "url": "https://tatoeba.org/en/sentences/show/10693711"
+    },
+    {
+     "name": "Tatoeba #9398472",
+     "url": "https://tatoeba.org/en/sentences/show/9398472"
+    }
+   ]
+  },
+  {
+   "card_id": 59,
+   "card_type": "recognition",
+   "topic": "conversation",
+   "unlocked_by": null,
+   "expected": "Hvad sker der",
+   "full_sentence": "Hvad sker der?",
+   "hint": null,
+   "word": {
+    "danish": "hvad sker der",
+    "article": null,
+    "english": "What's the matter?",
+    "pos": "phrase",
+    "glosses": [
+     "What's the matter?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Hvad sker der?",
+    "english": "What's going on?",
+    "target_form": "Hvad sker der"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvad_sker_der#Danish"
+    },
+    {
+     "name": "Tatoeba #4372272",
+     "url": "https://tatoeba.org/en/sentences/show/4372272"
+    },
+    {
+     "name": "Tatoeba #25125",
+     "url": "https://tatoeba.org/en/sentences/show/25125"
+    }
+   ]
+  },
+  {
+   "card_id": 60,
+   "card_type": "cloze",
+   "topic": "conversation",
+   "unlocked_by": 59,
+   "expected": "Hvad sker der",
+   "full_sentence": "Hvad sker der?",
+   "hint": "H___ s___ d__",
+   "word": {
+    "danish": "hvad sker der",
+    "article": null,
+    "english": "What's the matter?",
+    "pos": "phrase",
+    "glosses": [
+     "What's the matter?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___?",
+    "english": "What's going on?",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvad_sker_der#Danish"
+    },
+    {
+     "name": "Tatoeba #4372272",
+     "url": "https://tatoeba.org/en/sentences/show/4372272"
+    },
+    {
+     "name": "Tatoeba #25125",
+     "url": "https://tatoeba.org/en/sentences/show/25125"
+    }
+   ]
+  },
+  {
+   "card_id": 61,
+   "card_type": "recognition",
+   "topic": "time",
+   "unlocked_by": null,
+   "expected": "I går",
+   "full_sentence": "I går regnede det.",
+   "hint": null,
+   "word": {
+    "danish": "i går",
+    "article": null,
+    "english": "yesterday",
+    "pos": "phrase",
+    "glosses": [
+     "yesterday"
+    ],
+    "ipa": "[iˈɡ̊ɒ̝ˀ]",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "I går regnede det.",
+    "english": "It rained yesterday.",
+    "target_form": "I går"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/i_g%C3%A5r#Danish"
+    },
+    {
+     "name": "Tatoeba #3850411",
+     "url": "https://tatoeba.org/en/sentences/show/3850411"
+    },
+    {
+     "name": "Tatoeba #63300",
+     "url": "https://tatoeba.org/en/sentences/show/63300"
+    }
+   ]
+  },
+  {
+   "card_id": 62,
+   "card_type": "cloze",
+   "topic": "time",
+   "unlocked_by": 61,
+   "expected": "I går",
+   "full_sentence": "I går regnede det.",
+   "hint": "I g__",
+   "word": {
+    "danish": "i går",
+    "article": null,
+    "english": "yesterday",
+    "pos": "phrase",
+    "glosses": [
+     "yesterday"
+    ],
+    "ipa": "[iˈɡ̊ɒ̝ˀ]",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___ regnede det.",
+    "english": "It rained yesterday.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/i_g%C3%A5r#Danish"
+    },
+    {
+     "name": "Tatoeba #3850411",
+     "url": "https://tatoeba.org/en/sentences/show/3850411"
+    },
+    {
+     "name": "Tatoeba #63300",
+     "url": "https://tatoeba.org/en/sentences/show/63300"
+    }
+   ]
+  },
+  {
+   "card_id": 63,
+   "card_type": "recognition",
+   "topic": "time",
+   "unlocked_by": null,
+   "expected": "I dag",
+   "full_sentence": "I dag regner det.",
+   "hint": null,
+   "word": {
+    "danish": "i dag",
+    "article": null,
+    "english": "today / currently, the present",
+    "pos": "adv",
+    "glosses": [
+     "today",
+     "currently, the present"
+    ],
+    "ipa": "[i d̥æˀ]",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "I dag regner det.",
+    "english": "Today, it's raining.",
+    "target_form": "I dag"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/i_dag#Danish"
+    },
+    {
+     "name": "Tatoeba #12623511",
+     "url": "https://tatoeba.org/en/sentences/show/12623511"
+    },
+    {
+     "name": "Tatoeba #5965506",
+     "url": "https://tatoeba.org/en/sentences/show/5965506"
+    }
+   ]
+  },
+  {
+   "card_id": 64,
+   "card_type": "cloze",
+   "topic": "time",
+   "unlocked_by": 63,
+   "expected": "I dag",
+   "full_sentence": "I dag regner det.",
+   "hint": "I d__",
+   "word": {
+    "danish": "i dag",
+    "article": null,
+    "english": "today / currently, the present",
+    "pos": "adv",
+    "glosses": [
+     "today",
+     "currently, the present"
+    ],
+    "ipa": "[i d̥æˀ]",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___ regner det.",
+    "english": "Today, it's raining.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/i_dag#Danish"
+    },
+    {
+     "name": "Tatoeba #12623511",
+     "url": "https://tatoeba.org/en/sentences/show/12623511"
+    },
+    {
+     "name": "Tatoeba #5965506",
+     "url": "https://tatoeba.org/en/sentences/show/5965506"
+    }
+   ]
+  },
+  {
+   "card_id": 65,
+   "card_type": "recognition",
+   "topic": "time",
+   "unlocked_by": null,
+   "expected": "i morgen",
+   "full_sentence": "Gør det i morgen!",
+   "hint": null,
+   "word": {
+    "danish": "i morgen",
+    "article": null,
+    "english": "tomorrow",
+    "pos": "adv",
+    "glosses": [
+     "tomorrow"
+    ],
+    "ipa": "[i ˈmɒ̝ːɒ̝n]",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Gør det i morgen!",
+    "english": "Do it tomorrow.",
+    "target_form": "i morgen"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/i_morgen#Danish"
+    },
+    {
+     "name": "Tatoeba #10269182",
+     "url": "https://tatoeba.org/en/sentences/show/10269182"
+    },
+    {
+     "name": "Tatoeba #1849352",
+     "url": "https://tatoeba.org/en/sentences/show/1849352"
+    }
+   ]
+  },
+  {
+   "card_id": 66,
+   "card_type": "cloze",
+   "topic": "time",
+   "unlocked_by": 65,
+   "expected": "i morgen",
+   "full_sentence": "Gør det i morgen!",
+   "hint": "i m_____",
+   "word": {
+    "danish": "i morgen",
+    "article": null,
+    "english": "tomorrow",
+    "pos": "adv",
+    "glosses": [
+     "tomorrow"
+    ],
+    "ipa": "[i ˈmɒ̝ːɒ̝n]",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Gør det ___!",
+    "english": "Do it tomorrow.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/i_morgen#Danish"
+    },
+    {
+     "name": "Tatoeba #10269182",
+     "url": "https://tatoeba.org/en/sentences/show/10269182"
+    },
+    {
+     "name": "Tatoeba #1849352",
+     "url": "https://tatoeba.org/en/sentences/show/1849352"
+    }
+   ]
+  },
+  {
+   "card_id": 67,
+   "card_type": "recognition",
+   "topic": "needs",
+   "unlocked_by": null,
+   "expected": "Hvor er toilettet",
+   "full_sentence": "Hvor er toilettet?",
+   "hint": null,
+   "word": {
+    "danish": "hvor er toilettet",
+    "article": null,
+    "english": "where is the toilet?",
+    "pos": "phrase",
+    "glosses": [
+     "where is the toilet?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Hvor er toilettet?",
+    "english": "Where is the toilet?",
+    "target_form": "Hvor er toilettet"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvor_er_toilettet#Danish"
+    },
+    {
+     "name": "Tatoeba #615487",
+     "url": "https://tatoeba.org/en/sentences/show/615487"
+    },
+    {
+     "name": "Tatoeba #38937",
+     "url": "https://tatoeba.org/en/sentences/show/38937"
+    }
+   ]
+  },
+  {
+   "card_id": 68,
+   "card_type": "cloze",
+   "topic": "needs",
+   "unlocked_by": 67,
+   "expected": "Hvor er toilettet",
+   "full_sentence": "Hvor er toilettet?",
+   "hint": "H___ e_ t________",
+   "word": {
+    "danish": "hvor er toilettet",
+    "article": null,
+    "english": "where is the toilet?",
+    "pos": "phrase",
+    "glosses": [
+     "where is the toilet?"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___?",
+    "english": "Where is the toilet?",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/hvor_er_toilettet#Danish"
+    },
+    {
+     "name": "Tatoeba #615487",
+     "url": "https://tatoeba.org/en/sentences/show/615487"
+    },
+    {
+     "name": "Tatoeba #38937",
+     "url": "https://tatoeba.org/en/sentences/show/38937"
+    }
+   ]
+  },
+  {
+   "card_id": 69,
+   "card_type": "recognition",
+   "topic": "needs",
+   "unlocked_by": null,
+   "expected": "Jeg er sulten",
+   "full_sentence": "Jeg er sulten!",
+   "hint": null,
+   "word": {
+    "danish": "jeg er sulten",
+    "article": null,
+    "english": "I am hungry",
+    "pos": "phrase",
+    "glosses": [
+     "I am hungry"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Jeg er sulten!",
+    "english": "I'm hungry!",
+    "target_form": "Jeg er sulten"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/jeg_er_sulten#Danish"
+    },
+    {
+     "name": "Tatoeba #2491253",
+     "url": "https://tatoeba.org/en/sentences/show/2491253"
+    },
+    {
+     "name": "Tatoeba #404096",
+     "url": "https://tatoeba.org/en/sentences/show/404096"
+    }
+   ]
+  },
+  {
+   "card_id": 70,
+   "card_type": "cloze",
+   "topic": "needs",
+   "unlocked_by": 69,
+   "expected": "Jeg er sulten",
+   "full_sentence": "Jeg er sulten!",
+   "hint": "J__ e_ s_____",
+   "word": {
+    "danish": "jeg er sulten",
+    "article": null,
+    "english": "I am hungry",
+    "pos": "phrase",
+    "glosses": [
+     "I am hungry"
+    ],
+    "ipa": null,
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___!",
+    "english": "I'm hungry!",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/jeg_er_sulten#Danish"
+    },
+    {
+     "name": "Tatoeba #2491253",
+     "url": "https://tatoeba.org/en/sentences/show/2491253"
+    },
+    {
+     "name": "Tatoeba #404096",
+     "url": "https://tatoeba.org/en/sentences/show/404096"
+    }
+   ]
+  },
+  {
+   "card_id": 71,
+   "card_type": "recognition",
+   "topic": "needs",
+   "unlocked_by": null,
+   "expected": "Jeg er tørstig",
+   "full_sentence": "Jeg er tørstig.",
+   "hint": null,
+   "word": {
+    "danish": "jeg er tørstig",
+    "article": null,
+    "english": "I am thirsty",
+    "pos": "phrase",
+    "glosses": [
+     "I am thirsty"
+    ],
+    "ipa": "[ˈjɑ̈ɐ̯ ˈtˢɶ(ɐ̯)sd̥i]",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "Jeg er tørstig.",
+    "english": "I'm thirsty.",
+    "target_form": "Jeg er tørstig"
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/jeg_er_t%C3%B8rstig#Danish"
+    },
+    {
+     "name": "Tatoeba #618833",
+     "url": "https://tatoeba.org/en/sentences/show/618833"
+    },
+    {
+     "name": "Tatoeba #1814",
+     "url": "https://tatoeba.org/en/sentences/show/1814"
+    }
+   ]
+  },
+  {
+   "card_id": 72,
+   "card_type": "cloze",
+   "topic": "needs",
+   "unlocked_by": 71,
+   "expected": "Jeg er tørstig",
+   "full_sentence": "Jeg er tørstig.",
+   "hint": "J__ e_ t______",
+   "word": {
+    "danish": "jeg er tørstig",
+    "article": null,
+    "english": "I am thirsty",
+    "pos": "phrase",
+    "glosses": [
+     "I am thirsty"
+    ],
+    "ipa": "[ˈjɑ̈ɐ̯ ˈtˢɶ(ɐ̯)sd̥i]",
+    "compound_parts": []
+   },
+   "context": {
+    "danish": "___.",
+    "english": "I'm thirsty.",
+    "target_form": null
+   },
+   "sources": [
+    {
+     "name": "Wiktionary",
+     "url": "https://en.wiktionary.org/wiki/jeg_er_t%C3%B8rstig#Danish"
+    },
+    {
+     "name": "Tatoeba #618833",
+     "url": "https://tatoeba.org/en/sentences/show/618833"
+    },
+    {
+     "name": "Tatoeba #1814",
+     "url": "https://tatoeba.org/en/sentences/show/1814"
+    }
+   ]
+  }
+ ]
+}

@@ -2,7 +2,9 @@ import { defineConfig } from 'vitest/config';
 import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 
-export default defineConfig({
+// `vite build --mode demo` builds the public try-it demo (.env.demo sets VITE_DEMO):
+// served from GitHub Pages under /forglemmigej/demo/, written to build-demo/.
+export default defineConfig(({ mode }) => ({
 	plugins: [
 		sveltekit({
 			compilerOptions: {
@@ -11,7 +13,10 @@ export default defineConfig({
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 			// SPA mode: static files, unknown routes fall back to the client-side router.
-			adapter: adapter({ fallback: '200.html' })
+			adapter: adapter(
+				mode === 'demo' ? { pages: 'build-demo', fallback: 'index.html' } : { fallback: '200.html' }
+			),
+			paths: mode === 'demo' ? { base: '/forglemmigej/demo' } : {}
 		})
 	],
 	server: {
@@ -32,4 +37,4 @@ export default defineConfig({
 			}
 		]
 	}
-});
+}));

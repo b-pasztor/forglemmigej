@@ -13,7 +13,11 @@ is checked automatically. Everything runs on one small home server without a GPU
 > **Status: the full loop runs.** I use the app daily on my phone. Reviews feed a
 > nightly job that evaluates every model in shadow mode, refits FSRS when there is
 > enough data, and runs the champion/challenger gate; Grafana shows the evidence.
-> Next: drift alerts and a public model report. See [Roadmap](#roadmap).
+> Next: drift alerts. See [Roadmap](#roadmap).
+
+**[Try the demo](https://b-pasztor.github.io/forglemmigej/demo/)** (runs entirely in
+your browser) · **[Live model report](https://b-pasztor.github.io/forglemmigej/)**
+(published nightly from the homelab)
 
 ## Why this project
 
@@ -139,7 +143,7 @@ To run the production images locally: `docker compose --profile app up --build`
 - [ ] Drift alerts (prediction error over time and input distributions; Evidently reports)
 - [ ] System metrics and alerting with Prometheus
 - [x] Public [model report](https://b-pasztor.github.io/forglemmigej/) on GitHub Pages, published by the nightly job (weekly aggregates only)
-- [ ] A try-it demo running fully in the browser
+- [x] A [try-it demo](https://b-pasztor.github.io/forglemmigej/demo/) running fully in the browser: the same review app, FSRS in the browser, a fixed deck of survival phrases, no server
 - [ ] Audio (Danish TTS), pronunciation practice (Whisper), an LLM helper for grammar questions
 
 ## Attribution
@@ -149,10 +153,14 @@ To run the production images locally: `docker compose --profile app up --build`
 - Example sentences and translations: [Tatoeba](https://tatoeba.org/), [CC BY 2.0 FR](https://creativecommons.org/licenses/by/2.0/fr/).
 - Public review logs for pre-training: [open-spaced-repetition/fsrs-dataset](https://huggingface.co/datasets/open-spaced-repetition/fsrs-dataset), MIT.
 
-The downloaded data is not part of this repository.
+The downloaded data is not part of this repository. The one exception is the
+demo's fixed deck (`web/src/lib/demo/deck.json`), built from these sources by
+`content/demo_deck.py`; every card links to its Wiktionary entry and Tatoeba
+sentences.
 
 ## License
 
 The code is [MIT](LICENSE). The curation files in `data/curation/` correct and
-annotate the Wiktionary data and are shared under
+annotate the Wiktionary data, and the demo deck is adapted from Wiktionary and
+Tatoeba; both are shared under
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), like their source.

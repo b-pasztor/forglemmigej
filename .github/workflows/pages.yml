@@ -1,14 +1,17 @@
-# The public model report on GitHub Pages: the static page from report/ plus
-# the latest report.json, which the nightly job on the homelab commits to the
-# public data repository b-pasztor/forglemmigej-report (the homelab is not
-# reachable from here, so it pushes; its token can write only there).
-# Runs when the page changes and every evening after the nightly job.
+# The public site on GitHub Pages:
+# - /forglemmigej/: the model report, the static page from report/ plus the
+#   latest report.json, which the nightly job on the homelab commits to the
+#   public data repository b-pasztor/forglemmigej-report (the homelab is not
+#   reachable from here, so it pushes; its token can write only there);
+# - /forglemmigej/demo/: the try-it demo, the review app built to run in the
+#   browser alone (web/, `npm run build:demo`), checked before it is published.
+# Runs when either changes and every evening after the nightly job.
 name: pages
 
 on:
   push:
     branches: [main]
-    paths: ["report/**", ".github/workflows/pages.yml"]
+    paths: ["report/**", "web/**", ".github/workflows/pages.yml"]
   schedule:
     - cron: "15 19 * * *" # after the 19:30 Zurich nightly job, summer and winter
   workflow_dispatch:
@@ -23,17 +26,31 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Add the latest report data
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build and check the demo (static, no API or homelab references)
+        working-directory: web
         run: |
-          curl -sSfL -o report/report.json             https://raw.githubusercontent.com/b-pasztor/forglemmigej-report/main/report.json
-          python3 -c "import json; r = json.load(open('report/report.json')); print('report of', r['generated_at'])"
+          npm ci
+          npm run build:demo
+          npm run check:demo
+      - name: Assemble the site with the latest report data
+        run: |
+          mkdir site
+          cp -r report/. site/
+          cp -r web/build-demo site/demo
+          curl -sSfL -o site/report.json https://raw.githubusercontent.com/b-pasztor/forglemmigej-report/main/report.json
+          python3 -c "import json; r = json.load(open('site/report.json')); print('report of', r['generated_at'])"
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: report
+          path: site
 
   deploy:
     needs: build
