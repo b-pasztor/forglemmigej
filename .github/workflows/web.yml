@@ -1,4 +1,5 @@
-# The review app: types, lint, unit tests and the static build.
+# The review app: types, lint, unit tests and the static build; and the public
+# try-it demo build, checked to be static with no API or homelab references.
 name: web
 
 # Called by ci.yml when this part changed.
@@ -27,3 +28,5 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+      - run: npm run build:demo
+      - run: npm run check:demo

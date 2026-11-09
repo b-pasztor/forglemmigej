@@ -13,7 +13,9 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run"
+		"test": "npm run test:unit -- --run",
+		"build:demo": "vite build --mode demo && node scripts/demo-csp.mjs build-demo",
+		"check:demo": "node scripts/check-demo.mjs build-demo"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
@@ -37,5 +39,8 @@
 	"imports": {
 		"#lib": "./src/lib/index.js",
 		"#lib/*": "./src/lib/*"
+	},
+	"dependencies": {
+		"ts-fsrs": "5.4.2"
 	}
 }

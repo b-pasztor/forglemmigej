@@ -1,7 +1,23 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { api, type Answer, type AnswerResult, type Next, type Stats } from '../lib/api';
+	import type { Answer, AnswerResult, Next, Stats } from '../lib/api';
+	import { loadBackend, type Backend, type DemoControls } from '../lib/backend';
 	import { highlight, splitGap } from '../lib/highlight';
+	import DemoFooter from '../lib/demo/DemoFooter.svelte';
+
+	interface LastAnswer {
+		headword: string;
+		correct: boolean;
+		predicted: number | null;
+		nextDueAt: string | null;
+	}
+
+	let backend: Backend;
+	let demo = $state<DemoControls | null>(null);
+	let last = $state<LastAnswer | null>(null);
+	// The demo's clock and progress live outside Svelte's state; refreshed on every load.
+	let demoDay = $state('');
+	let learned = $state(0);
 
 	type Phase = 'loading' | 'front' | 'back' | 'feedback' | 'done' | 'error';
 
@@ -28,13 +44,21 @@
 		result = null;
 		typed = '';
 		try {
-			next = await api.next();
+			next = await backend.next();
+			if (demo) {
+				demoDay = demo.now().toLocaleDateString([], {
+					weekday: 'short',
+					day: 'numeric',
+					month: 'short'
+				});
+				learned = demo.learned();
+			}
 			if (next.card) {
 				phase = 'front';
 				shownAt = performance.now();
 				if (next.card.card_type === 'cloze') setTimeout(() => input?.focus(), 0);
 			} else {
-				stats = await api.stats();
+				stats = await backend.stats();
 				phase = 'done';
 			}
 		} catch (e) {
@@ -52,7 +76,15 @@
 		if (!card) return;
 		if ('typed_answer' in answer) responseMs = performance.now() - shownAt;
 		try {
-			result = await api.answer(card.card_id, answer, responseMs, sessionId);
+			result = await backend.answer(card.card_id, answer, responseMs, sessionId);
+			if (demo) {
+				last = {
+					headword,
+					correct: result.correct,
+					predicted: result.predicted_recall,
+					nextDueAt: result.next_due_at
+				};
+			}
 			if (isCloze) {
 				phase = 'feedback';
 			} else {
@@ -78,9 +110,29 @@
 		});
 	}
 
+	/** "in 10 minutes", "in 3 days": measured on the demo's own clock. */
+	function fromNow(iso: string | null): string {
+		if (!iso || !demo) return '';
+		const minutes = Math.round((+new Date(iso) - +demo.now()) / 60_000);
+		if (minutes < 60) return `in ${Math.max(1, minutes)} minute${minutes === 1 ? '' : 's'}`;
+		const hours = Math.round(minutes / 60);
+		if (hours < 36) return `in ${hours} hour${hours === 1 ? '' : 's'}`;
+		return `in ${Math.round(hours / 24)} days`;
+	}
+
+	function jump(action: 'day' | 'due' | 'reset') {
+		if (!demo) return;
+		if (action === 'day') demo.advance(86_400_000);
+		else if (action === 'due') demo.skipToNextDue();
+		else demo.reset();
+		last = null;
+		load();
+	}
+
 	onMount(async () => {
+		({ backend, demo } = await loadBackend());
 		try {
-			sessionId = (await api.startSession(navigator.userAgent)).id;
+			sessionId = (await backend.startSession(navigator.userAgent)).id;
 		} catch {
 			sessionId = null; // reviews still work without a session
 		}
@@ -97,6 +149,22 @@
 			>
 		{/if}
 	</header>
+
+	{#if demo}
+		<p class="demo-bar small">
+			<span>Demo · {demoDay}</span>
+			<button onclick={() => jump('day')}>Jump a day ahead</button>
+			<button onclick={() => jump('reset')}>Start over</button>
+		</p>
+		{#if last}
+			<p class="last small">
+				<strong>{last.headword}</strong>:
+				{#if last.predicted === null}first time seen{:else}the model expected
+					{Math.round(last.predicted * 100)}%{/if}
+				· {last.correct ? 'remembered' : 'forgotten'} · back {fromNow(last.nextDueAt)}
+			</p>
+		{/if}
+	{/if}
 
 	{#if phase === 'loading'}
 		<p class="muted center">Loading…</p>
@@ -116,9 +184,15 @@
 				</p>
 			{/if}
 			{#if next?.next_due_at}
-				<p class="muted">Next card is due {formatDue(next.next_due_at)}.</p>
+				<p class="muted">
+					Next card is due {demo ? fromNow(next.next_due_at) : formatDue(next.next_due_at)}.
+				</p>
 			{/if}
-			<button class="primary" onclick={load}>Check again</button>
+			{#if demo && next?.next_due_at}
+				<button class="primary" onclick={() => jump('due')}>Skip ahead to the next card</button>
+			{:else}
+				<button class="primary" onclick={load}>Check again</button>
+			{/if}
 		</section>
 	{:else if card}
 		<section class="card">
@@ -203,6 +277,10 @@
 			{/if}
 		</section>
 	{/if}
+
+	{#if demo}
+		<DemoFooter {demo} {learned} cardId={card?.card_id ?? null} />
+	{/if}
 </main>
 
 <style>
@@ -216,6 +294,7 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
+		gap: 12px;
 		margin-bottom: 16px;
 	}
 	.brand {
@@ -349,5 +428,28 @@
 	}
 	.verdict.again {
 		color: var(--again);
+	}
+	.demo-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+		color: var(--muted);
+		margin: 0 0 12px;
+	}
+	.demo-bar span {
+		margin-right: auto;
+	}
+	.demo-bar button {
+		font: inherit;
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--text);
+		border-radius: 999px;
+		padding: 4px 12px;
+	}
+	.last {
+		margin: 0 0 12px;
+		color: var(--muted);
 	}
 </style>

@@ -46,7 +46,7 @@ jobs:
           changed() { grep -qE "^(all\$|$1)" changed.txt && echo true || echo false; }
           {
             echo "api=$(changed 'api/|data/curation/|\.github/workflows/(ci|api)\.yml')"
-            echo "web=$(changed 'web/|\.github/workflows/(ci|web)\.yml')"
+            echo "web=$(changed 'web/|\.github/workflows/(ci|web|pages)\.yml')"
             echo "deploy=$(changed 'deploy/|api/|web/|data/curation/|\.github/workflows/(ci|deploy)\.yml')"
           } | tee -a "$GITHUB_OUTPUT"
 

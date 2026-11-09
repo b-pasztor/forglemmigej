@@ -7,3 +7,6 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# Generated (content/demo_deck.py)
+src/lib/demo/deck.json

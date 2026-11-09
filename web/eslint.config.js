@@ -34,8 +34,8 @@ export default defineConfig(
 		}
 	},
 	{
-		// Override or add rule settings here, such as:
-		// 'svelte/button-has-type': 'error'
-		rules: {}
+		// The demo's attribution links all point to external sources and licenses.
+		files: ['src/lib/demo/DemoFooter.svelte'],
+		rules: { 'svelte/no-navigation-without-resolve': ['error', { ignoreLinks: true }] }
 	}
 );
