@@ -120,10 +120,9 @@
 		return `in ${Math.round(hours / 24)} days`;
 	}
 
-	function jump(action: 'day' | 'due' | 'reset') {
+	function jump(action: 'due' | 'reset') {
 		if (!demo) return;
-		if (action === 'day') demo.advance(86_400_000);
-		else if (action === 'due') demo.skipToNextDue();
+		if (action === 'due') demo.skipToNextDue();
 		else demo.reset();
 		last = null;
 		load();
@@ -153,7 +152,6 @@
 	{#if demo}
 		<p class="demo-bar small">
 			<span>Demo · {demoDay}</span>
-			<button onclick={() => jump('day')}>Jump a day ahead</button>
 			<button onclick={() => jump('reset')}>Start over</button>
 		</p>
 		{#if last}
