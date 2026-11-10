@@ -6,8 +6,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from forglemmigej_api.app import app, card_out, first_letters, mask, utcnow
+from forglemmigej_api.app import app, card_out, first_letters, utcnow
 from forglemmigej_api.config import get_settings
+from forglemmigej_api.content.examples import mask
 from forglemmigej_api.db import get_session
 from forglemmigej_api.models import (
     Card,

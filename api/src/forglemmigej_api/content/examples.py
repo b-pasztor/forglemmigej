@@ -39,12 +39,29 @@ GLOSS_STOPWORDS = frozenset(
 )
 
 
+def _form_pattern(form: str) -> re.Pattern[str]:
+    """The form as a whole word or phrase, ignoring case."""
+    return re.compile(rf"(?<![\wæøå]){re.escape(form)}(?![\wæøå])", re.IGNORECASE)
+
+
+def mask(sentence: str, form: str) -> str:
+    """The sentence with the form replaced by a gap ("Mange tak!" -> "___!")."""
+    return _form_pattern(form).sub("___", sentence, count=1)
+
+
 @dataclass(frozen=True)
 class Example:
     sentence: Sentence
     translation: Translation
     target_form: str  # the form as written in the sentence ("er" for "være")
     matched_meaning: str | None  # the gloss confirmed by the translation
+
+    @property
+    def has_gap(self) -> bool:
+        """Whether a cloze can hide the form. Phrases are matched on tokens, so
+        "Nej, tak." confirms "nej tak", but the comma leaves nothing to mask: a
+        cloze would show its own answer."""
+        return _form_pattern(self.target_form).search(self.sentence.text) is not None
 
 
 def target_forms(
@@ -144,7 +161,7 @@ def _find_phrase(tokens: list[str], phrase: list[str]) -> bool:
 
 def _surface_form(text: str, form: str) -> str:
     """The form with its original capitalisation in the sentence."""
-    match = re.search(rf"(?<![\wæøå]){re.escape(form)}(?![\wæøå])", text, re.IGNORECASE)
+    match = _form_pattern(form).search(text)
     return match.group(0) if match else form
 
 
