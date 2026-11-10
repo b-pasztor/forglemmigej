@@ -1,4 +1,3 @@
-import re
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Literal
 
@@ -8,6 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from forglemmigej_api.config import Settings, get_settings
+from forglemmigej_api.content.examples import mask
 from forglemmigej_api.db import get_session
 from forglemmigej_api.models import (
     Card,
@@ -107,11 +107,6 @@ class StatsOut(BaseModel):
     due_now: int
     due_next_7_days: int
     cards_by_status: dict[str, int]
-
-
-def mask(sentence: str, form: str) -> str:
-    pattern = rf"(?<![\wæøå]){re.escape(form)}(?![\wæøå])"
-    return re.sub(pattern, "___", sentence, count=1, flags=re.IGNORECASE)
 
 
 def first_letters(phrase: str) -> str:

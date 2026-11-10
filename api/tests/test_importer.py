@@ -63,6 +63,57 @@ def test_plan_cards() -> None:
     ]
 
 
+def test_a_cloze_that_would_show_its_answer_becomes_a_recall_card() -> None:
+    # Phrases match on tokens: "Nej, tak." confirms "nej tak", but the comma
+    # leaves nothing to mask, so a cloze would show the answer.
+    nej_tak = deck_item("nej tak", None, pos="phrase")
+    recognition, second = plan_cards(nej_tak, example("1", "Nej, tak.", "nej tak"))
+    assert recognition.card_type == CardType.RECOGNITION
+    assert recognition.sentence is not None  # still fine to read
+    assert (second.card_type, second.sentence) == (CardType.RECALL, None)
+
+
+def test_reimport_replaces_a_reviewed_cloze_without_a_gap(
+    migrated_engine: Engine,
+) -> None:
+    """An older import made a cloze from "Nej, tak.". The next import suspends it
+    (it has reviews, which stay in the log) and adds the recall card instead."""
+    with Session(migrated_engine) as session:
+        item = deck_item("nej tak", None, pos="phrase")
+        sentence = example("901", "Nej, tak.", "nej tak")
+        upsert_deck(session, [item], {item.lemma.key: sentence})
+        recognition = cards_of(session, "nej tak")[CardType.RECOGNITION]
+        old_cloze = Card(
+            item_id=recognition.item_id,
+            card_type=CardType.CLOZE,
+            context_item_id=recognition.context_item_id,
+            target_form="nej tak",
+        )
+        session.add(old_cloze)
+        session.flush()
+        session.add(
+            Review(
+                card_id=old_cloze.id,
+                reviewed_at=datetime.now(UTC),
+                grade=Grade.GOOD,
+                answer_mode=AnswerMode.TYPED,
+            )
+        )
+        session.flush()
+
+        planned = upsert_deck(session, [item], {item.lemma.key: sentence})
+        deleted, suspended = prune(session, planned)
+
+        assert (deleted, suspended) == (0, 1)
+        cards = cards_of(session, "nej tak")
+        assert {t: c.status for t, c in cards.items()} == {
+            CardType.RECOGNITION: CardStatus.NEW,
+            CardType.CLOZE: CardStatus.SUSPENDED,
+            CardType.RECALL: CardStatus.NEW,
+        }
+        session.rollback()
+
+
 def test_import_is_idempotent_and_merges_topics(migrated_engine: Engine) -> None:
     with Session(migrated_engine) as session:
         upsert_deck(session, [deck_item("hejsa", 95), deck_item("farvel", 314)])

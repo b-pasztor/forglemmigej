@@ -15,13 +15,12 @@ import argparse
 import json
 import sys
 from collections.abc import Sequence
-from dataclasses import replace
 from pathlib import Path
 from urllib.parse import quote
 
-from forglemmigej_api.app import first_letters, mask
+from forglemmigej_api.app import first_letters
 from forglemmigej_api.content.deck import Curation, DeckItem, build_phrases
-from forglemmigej_api.content.examples import Example, select_examples
+from forglemmigej_api.content.examples import Example, mask, select_examples
 from forglemmigej_api.content.importer import REPO_ROOT, plan_cards
 from forglemmigej_api.content.tatoeba import load_corpus
 from forglemmigej_api.content.wiktionary import Dictionary
@@ -49,10 +48,6 @@ def hint(card_type: CardType, phrase: str) -> str | None:
     return None
 
 
-def gap_found(example: Example) -> bool:
-    return mask(example.sentence.text, example.target_form) != example.sentence.text
-
-
 def demo_cards(items: Sequence[DeckItem], examples: dict[str, Example]) -> list[dict]:
     """The cards in curriculum order; a word's second card names its first one."""
     cards: list[dict] = []
@@ -61,9 +56,6 @@ def demo_cards(items: Sequence[DeckItem], examples: dict[str, Example]) -> list[
         example = examples.get(lemma.key)
         first_id = None
         for plan in plan_cards(item, example):
-            if plan.card_type == CardType.CLOZE and not gap_found(plan.sentence):
-                # "Nej, tak." cannot hide "nej tak": the answer would be on the card.
-                plan = replace(plan, card_type=CardType.RECALL, sentence=None)
             card_id = len(cards) + 1
             is_cloze = plan.card_type == CardType.CLOZE
             target = plan.sentence.target_form if plan.sentence else None

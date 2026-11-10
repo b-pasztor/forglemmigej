@@ -63,10 +63,14 @@ class CardPlan:
 
 def plan_cards(item: DeckItem, example: Example | None) -> list[CardPlan]:
     if example:
-        return [
-            CardPlan(CardType.RECOGNITION, example),
-            CardPlan(CardType.CLOZE, example),
-        ]
+        # A cloze must hide its answer; if the form cannot be masked in the
+        # sentence ("Nej, tak." for "nej tak"), the second card is a recall card.
+        second = (
+            CardPlan(CardType.CLOZE, example)
+            if example.has_gap
+            else CardPlan(CardType.RECALL)
+        )
+        return [CardPlan(CardType.RECOGNITION, example), second]
     lemma = item.lemma
     # Curated phrases ("skål", "mange tak") have one clear meaning.
     unambiguous = item.kind == "phrase" or (
